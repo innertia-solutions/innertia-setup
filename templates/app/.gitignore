@@ -1,0 +1,7 @@
+.env
+backend/vendor/
+backend/storage/logs/*.log
+backend/bootstrap/cache/
+frontend/node_modules/
+frontend/.nuxt/
+frontend/.output/
