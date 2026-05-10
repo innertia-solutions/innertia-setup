@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export async function createProject(projectName: string, templateId: string): Promise<void> {
   const templateDir = path.resolve(__dirname, '../templates', templateId)
-  const targetDir = path.resolve(process.cwd(), projectName)
+  const targetDir = path.resolve(__dirname, '../..', projectName)
 
   const vars = buildVars(projectName)
   await scaffoldProject(templateDir, targetDir, vars)
