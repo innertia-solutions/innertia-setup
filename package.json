@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx cli/src/index.ts",
     "build": "tsup cli/src/index.ts --format esm --dts --clean --out-dir dist/cli",
+    "prepare": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "create": "tsx scripts/create.ts"

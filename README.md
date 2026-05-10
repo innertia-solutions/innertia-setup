@@ -5,7 +5,18 @@ CLI interactivo para crear proyectos del stack Innertia (Laravel + Nuxt + Docker
 ## Uso
 
 ```bash
-# Interactivo (CLI)
+# Desde cualquier máquina con Node instalado
+# (crea el proyecto en el directorio actual)
+npx github:guillermofarias/innertia-setup
+
+# Alias recomendado en ~/.zshrc para correr desde ~/Sites/inertia/
+alias new-project="cd ~/Sites/inertia && npx github:guillermofarias/innertia-setup"
+```
+
+## Desarrollo local
+
+```bash
+# Interactivo
 npm run dev
 
 # Directo sin prompts
