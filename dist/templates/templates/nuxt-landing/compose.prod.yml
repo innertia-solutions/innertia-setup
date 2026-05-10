@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/prod/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "{{FRONTEND_PORT}}:3000"
+    env_file:
+      - .env
