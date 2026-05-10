@@ -7,7 +7,11 @@ return [
     'saas' => [
         'tenant_model' => null, // set to App\Models\Tenant::class when you create it
 
-        'db_prefix' => '{{PROJECT_NAME}}_',
+        // 'single' — shared DB, models use BelongsToTenant + TenantScope
+        // 'multi'  — separate DB per tenant (requires db_prefix)
+        'db_strategy' => 'single',
+
+        'db_prefix' => '{{PROJECT_NAME}}_', // only used when db_strategy = 'multi'
 
         'central_domains' => [
             'localhost',
