@@ -70,7 +70,10 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "innertia-solutions/laravel-kit",
+                "stancl/tenancy"
+            ]
         }
     },
     "config": {
