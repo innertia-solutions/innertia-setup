@@ -48,6 +48,7 @@ export async function scaffoldProject(
     cwd: targetDir,
     dot: true,
     onlyFiles: true,
+    ignore: ['.git/**'],
   })
 
   for (const file of files) {
