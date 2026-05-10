@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(php artisan *)",
+      "Bash(composer *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)"
+    ]
+  }
+}
