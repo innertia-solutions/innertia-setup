@@ -2,17 +2,38 @@
 
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | Application Mode
+    |--------------------------------------------------------------------------
+    |
+    | 'app'  — single-tenant. Settings are global (tenant_id = null).
+    | 'saas' — multi-tenant. Settings resolve per active tenant with fallback
+    |          to platform level. Tenancy is configured automatically.
+    |
+    */
+
     'mode' => 'saas',
 
-    'saas' => [
-        'tenant_model' => null, // set to App\Models\Tenant::class when you create it
+    /*
+    |--------------------------------------------------------------------------
+    | SaaS / Tenancy Settings
+    |--------------------------------------------------------------------------
+    */
 
-        // 'single' — shared DB, tenant_id column on every table
-        // 'multi'  — separate DB per tenant (requires db_prefix)
+    'saas' => [
+        // Extend this model in your app if you need extra tenant columns.
+        // class Tenant extends \Innertia\Models\Tenant { ... }
+        'tenant_model' => \Innertia\Models\Tenant::class,
+
+        // 'single' — all tenants share one database (tenant_id on every table)
+        // 'multi'  — each tenant gets its own database
         'db_strategy' => 'single',
 
-        'db_prefix' => '{{PROJECT_NAME}}_', // only used when db_strategy = 'multi'
+        // Only used when db_strategy = 'multi'. Tenant DB name: {prefix}{tenant_id}
+        // 'db_prefix' => '{{PROJECT_NAME}}_',
 
+        // Domains that host the central (landlord) application
         'central_domains' => [
             'localhost',
             '127.0.0.1',
@@ -24,8 +45,13 @@ return [
     | Auth Defaults
     |--------------------------------------------------------------------------
     |
-    | These are fallback values. Override at runtime via Settings::set().
-    | In saas mode, Settings are scoped per active tenant automatically.
+    | These are fallback values only. At runtime the auth layer reads from
+    | the Settings system (database) so each tenant can override them without
+    | a deployment. Set live values via Settings::set():
+    |
+    |   Settings::set('auth.otp.enabled', true);
+    |   Settings::set('auth.email_verification.enabled', true);
+    |   Settings::set('auth.sessions.restrict_concurrent', true);
     |
     */
 
