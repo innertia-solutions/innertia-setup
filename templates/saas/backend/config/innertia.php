@@ -68,12 +68,29 @@ return [
 
     'permissions' => [
         [
-            'category'       => 'system',
-            'category_alias' => 'Sistema',
+            'category'       => 'users',
+            'category_alias' => 'Usuarios',
             'permissions'    => [
-                'system.admin'            => 'Administración completa del sistema',
-                'system.roles.manage'     => 'Administrar roles',
-                'system.permissions.view' => 'Ver permisos del sistema',
+                'users.view'           => 'Ver lista de usuarios y detalles',
+                'users.manage'         => 'Crear, editar y eliminar usuarios',
+                'users.assign_roles'   => 'Asignar roles a usuarios',
+                'users.reset_password' => 'Restablecer contraseñas de usuarios',
+            ],
+        ],
+        [
+            'category'       => 'roles',
+            'category_alias' => 'Roles',
+            'permissions'    => [
+                'roles.view'   => 'Ver roles y sus permisos',
+                'roles.manage' => 'Crear, editar y eliminar roles',
+            ],
+        ],
+        [
+            'category'       => 'permissions',
+            'category_alias' => 'Permisos',
+            'permissions'    => [
+                'permissions.view' => 'Ver permisos disponibles del sistema',
+                'permissions.sync' => 'Sincronizar permisos con el sistema',
             ],
         ],
     ],
