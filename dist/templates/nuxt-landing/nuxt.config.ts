@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  extends: ['@innertia-solutions/nuxt-themes'],
   compatibilityDate: '2025-07-15',
   ssr: true,
   devServer: {

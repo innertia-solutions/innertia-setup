@@ -4,7 +4,7 @@
 - Laravel 13, PHP 8.3
 - PostgreSQL 16, Redis 7
 - Docker + Xdebug
-- `innertia-solutions/laravel-kit` — DataTable, ActivityLogger, EntityHistory, HasNanoId, Auditable
+- `innertia-solutions/laravel-kit` — Auth (JWT), DataTable, ActivityLogger, EntityHistory, UseCase, DomainEvent, Webhooks, Settings
 - `spatie/laravel-permission` — roles y permisos
 - `tymon/jwt-auth` — autenticación JWT
 
@@ -22,94 +22,94 @@
 
 ## Architecture — DDD personalizado
 
-El código de negocio vive en `app/` con esta estructura:
-
 ```
 app/
 ├── Domains/          # Entidades de negocio. Un subdirectorio por dominio.
 │   └── {Domain}/
 │       ├── Models/       # Eloquent models
-│       ├── UseCases/     # Lógica de negocio orquestada (extienden UseCase)
+│       ├── UseCases/     # Lógica de negocio (extienden \Innertia\Platform\Contracts\UseCase)
 │       ├── Services/     # Lógica auxiliar reutilizable
-│       ├── Events/       # Eventos de dominio
+│       ├── Events/       # DomainEvents (extienden \Innertia\Platform\Events\DomainEvent)
 │       ├── Listeners/    # Escuchan eventos
-│       ├── Gates/        # Autorizaciones del dominio
+│       ├── Gates/        # Autorizaciones (extienden \Innertia\Platform\Contracts\DomainGate)
 │       ├── Enums/        # Enumeraciones PHP 8.1+
-│       ├── Mails/        # Mailables del dominio
+│       ├── Mails/        # Mailables (extienden \Innertia\Mail\InnertiaMailable)
 │       └── Observers/    # Eloquent observers
 │
-├── Apps/             # Capa de aplicación (HTTP). Un subdirectorio por app/módulo.
-│   └── {AppName}/
-│       └── {Domain}/
-│           └── Controllers/   # Controladores REST (delegan a UseCases)
-│
-└── Platform/         # Infraestructura compartida. No contiene lógica de negocio.
-    ├── Contracts/    # Interfaces base: UseCase, Executable, GateInterface
-    ├── Traits/       # Traits transversales: Auditable, HasHistory, HasNanoId
-    ├── Models/       # Modelos de infraestructura (ActivityLog, EmailLog)
-    ├── Services/     # Servicios de infraestructura
-    └── Facades/      # Facades propias (DataTable, ActivityLogger)
+└── Apps/             # Capa HTTP. Un subdirectorio por app/módulo.
+    └── {AppName}/
+        └── {Domain}/
+            └── Controllers/   # Controladores REST (delegan a UseCases)
 ```
 
 ### Reglas
 
-- Los **Controllers** (`app/Apps/`) solo validan input y delegan a UseCases. Sin lógica de negocio.
-- Los **UseCases** (`app/Domains/{D}/UseCases/`) extienden `App\Platform\Contracts\UseCase` y tienen un único método `execute()`.
-- Los **Models** viven en `app/Domains/{D}/Models/`. Nunca en `app/Models/`.
-- Las rutas API se definen en `routes/api.php` agrupadas por módulo.
-- Todos los modelos usan `HasNanoId` (de laravel-kit) en vez de auto-increment IDs.
+- Controllers solo validan input y delegan a UseCases. Sin lógica de negocio.
+- UseCases extienden `\Innertia\Platform\Contracts\UseCase`, reciben parámetros en constructor y devuelven resultado desde `execute()`.
+- Models viven en `app/Domains/{D}/Models/`. Nunca en `app/Models/`.
+- Rutas API en `routes/api.php` agrupadas por módulo.
 - Usar `Auditable` y `HasHistory` (de laravel-kit) en modelos que requieren trazabilidad.
+- IDs son UUID — los modelos que extiendan `\Innertia\Models\User` ya lo incluyen. Para otros modelos, usar el trait `\Innertia\Traits\HasUuid`.
 
 ### Ejemplo de UseCase
 
 ```php
-// app/Domains/Users/UseCases/CreateUser.php
-namespace App\Domains\Users\UseCases;
+// app/Domains/Orders/UseCases/CreateOrder.php
+namespace App\Domains\Orders\UseCases;
 
-use App\Domains\Users\Models\User;
-use App\Platform\Contracts\UseCase;
+use App\Domains\Orders\Models\Order;
+use Innertia\Platform\Contracts\UseCase;
 
-class CreateUser extends UseCase
+class CreateOrder extends UseCase
 {
-    public function execute(string $name, string $email, string $password): User
+    public function __construct(
+        public readonly string $customerId,
+        public readonly float  $total,
+    ) {}
+
+    public function execute(): Order
     {
-        return User::create([
-            'name'     => $name,
-            'email'    => $email,
-            'password' => bcrypt($password),
+        return Order::create([
+            'customer_id' => $this->customerId,
+            'total'       => $this->total,
         ]);
     }
 }
 
-// Uso desde un controller:
-(new CreateUser)($name, $email, $password);
-// o:
-(new CreateUser)->execute($name, $email, $password);
+// Uso sincrónico:
+$order = (new CreateOrder(customerId: '...', total: 99.9))->execute();
+
+// Uso asincrónico (cola):
+(new CreateOrder(customerId: '...', total: 99.9))->onQueue();
+(new CreateOrder(customerId: '...', total: 99.9))->onQueue('critical');
+(new CreateOrder(customerId: '...', total: 99.9))->delay(now()->addMinutes(5));
 ```
 
 ### Ejemplo de Controller
 
 ```php
-// app/Apps/BackOffice/Users/Controllers/UsersController.php
-namespace App\Apps\BackOffice\Users\Controllers;
+// app/Apps/BackOffice/Orders/Controllers/OrdersController.php
+namespace App\Apps\BackOffice\Orders\Controllers;
 
-use App\Domains\Users\UseCases\CreateUser;
+use App\Domains\Orders\UseCases\CreateOrder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class UsersController
+class OrdersController
 {
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:150',
-            'email'    => 'required|email|unique:users',
-            'password' => 'required|min:8',
+            'customer_id' => 'required|string',
+            'total'       => 'required|numeric|min:0',
         ]);
 
-        $user = (new CreateUser)($data['name'], $data['email'], $data['password']);
+        $order = (new CreateOrder(
+            customerId: $data['customer_id'],
+            total:      $data['total'],
+        ))->execute();
 
-        return response()->json($user, 201);
+        return response()->json($order, 201);
     }
 }
 ```

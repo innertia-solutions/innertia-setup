@@ -6,7 +6,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "hidehalo/nanoid-php": "^1.1",
         "innertia-solutions/laravel-kit": "dev-main",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
