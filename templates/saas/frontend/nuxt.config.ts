@@ -4,10 +4,7 @@ export default defineNuxtConfig({
     '@innertia-solutions/nuxt-themes',  // UI: Vantage components, layouts, Preline
     '@innertia-solutions/nuxt-saas',    // Multi-tenant: subdomain detection, tenant validation, X-Tenant-Id
   ],
-  modules: [
-    '@pinia/nuxt',
-  ],
-  compatibilityDate: '2025-07-15',
+compatibilityDate: '2025-07-15',
   ssr: true,
   devServer: {
     host: '0.0.0.0'

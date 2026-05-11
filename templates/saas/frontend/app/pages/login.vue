@@ -1,27 +1,44 @@
+<script setup>
+definePageMeta({ layout: 'auth', middleware: ['guest'] })
+
+const { performLogin } = useAuth()
+const config = useRuntimeConfig()
+
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const error = ref('')
+
+async function handleSubmit() {
+  loading.value = true
+  error.value = ''
+  try {
+    const data = await performLogin('backoffice', email.value, password.value)
+    if (data?.requires_password_change) {
+      await navigateTo('/backoffice/change-password')
+    } else {
+      await navigateTo(config.public.homePath || '/backoffice')
+    }
+  } catch (e) {
+    error.value = e?.data?.message ?? 'Credenciales incorrectas.'
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
 <template>
   <div>
-    <div class="mb-6 text-center">
-      <h2 class="text-2xl font-bold text-gray-900">Iniciar sesión</h2>
-      <p class="mt-1 text-sm text-gray-500">Ingresa tus credenciales para continuar</p>
-    </div>
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white">Iniciar sesión</h1>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Ingresa tus credenciales para continuar.</p>
 
-    <!-- Challenge notice -->
-    <div v-if="challenge" class="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
-      Se requiere verificación adicional. Por favor, contacta al administrador del sistema.
-    </div>
-
-    <!-- Error message -->
-    <div v-if="errorMsg" class="mb-4 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
-      {{ errorMsg }}
-    </div>
-
-    <form class="space-y-5" @submit.prevent="handleSubmit">
+    <form class="mt-6 space-y-4" @submit.prevent="handleSubmit">
       <VantageInput
         v-model="email"
         type="email"
         label="Correo electrónico"
         placeholder="tu@correo.com"
-        :error="emailError"
+        autocomplete="email"
       />
 
       <VantageInput
@@ -29,71 +46,18 @@
         type="password"
         label="Contraseña"
         placeholder="••••••••"
-        :error="passwordError"
+        autocomplete="current-password"
+        :error="error || null"
       />
 
       <VantageButton
-        type="submit"
+        text="Ingresar"
         severity="primary"
-        class="w-full justify-center"
+        size="md"
         :loading="loading"
-      >
-        Ingresar
-      </VantageButton>
+        class="w-full"
+        @click="handleSubmit"
+      />
     </form>
   </div>
 </template>
-
-<script setup lang="ts">
-definePageMeta({
-  layout: 'auth',
-  middleware: ['guest'],
-})
-
-const { login } = useAuth()
-
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const errorMsg = ref('')
-const emailError = ref('')
-const passwordError = ref('')
-const challenge = ref(false)
-
-function validate(): boolean {
-  emailError.value = ''
-  passwordError.value = ''
-
-  if (!email.value) {
-    emailError.value = 'El correo es requerido.'
-  } else if (!/\S+@\S+\.\S+/.test(email.value)) {
-    emailError.value = 'El correo no es válido.'
-  }
-
-  if (!password.value) {
-    passwordError.value = 'La contraseña es requerida.'
-  }
-
-  return !emailError.value && !passwordError.value
-}
-
-async function handleSubmit() {
-  if (!validate()) return
-
-  loading.value = true
-  errorMsg.value = ''
-  challenge.value = false
-
-  const result = await login(email.value, password.value, 'backoffice')
-
-  loading.value = false
-
-  if (result.success) {
-    await navigateTo('/backoffice')
-  } else if (result.challenge) {
-    challenge.value = true
-  } else {
-    errorMsg.value = result.error ?? 'Error al iniciar sesión.'
-  }
-}
-</script>
