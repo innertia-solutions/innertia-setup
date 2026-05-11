@@ -1,5 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  extends: [
+    '@innertia-solutions/nuxt-themes',  // UI: Vantage components, layouts, Preline
+    '@innertia-solutions/nuxt-saas',    // Multi-tenant: subdomain detection, tenant validation, X-Tenant-Id
+  ],
   compatibilityDate: '2025-07-15',
   ssr: true,
   devServer: {
@@ -10,6 +14,9 @@ export default defineNuxtConfig({
       appName: '{{PROJECT_NAME}}',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
       appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'local',
+      loginPath: process.env.NUXT_PUBLIC_LOGIN_PATH || '/login',
+      homePath: process.env.NUXT_PUBLIC_HOME_PATH || '/',
+      timeZone: process.env.NUXT_PUBLIC_TIMEZONE || 'America/Santiago',
     }
   },
   nitro: {
