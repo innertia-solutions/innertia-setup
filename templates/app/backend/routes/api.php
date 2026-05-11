@@ -1,8 +1,25 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+/*
+|--------------------------------------------------------------------------
+| Auth routes (innertia-solutions/laravel-kit)
+|--------------------------------------------------------------------------
+|
+| POST /auth/login
+| POST /auth/otp/send  |  POST /auth/otp/verify
+| POST /auth/2fa/verify
+| POST /auth/email/verify/send  |  GET /auth/email/verify
+| POST /auth/password/change    |  POST /auth/password/set
+| GET  /auth/me  |  POST /auth/refresh  |  POST /auth/logout  (protected)
+| POST /auth/2fa/enable  |  POST /auth/2fa/disable            (protected)
+|
+*/
+require base_path('vendor/innertia-solutions/laravel-kit/src/Auth/routes.php');
+
+/*
+|--------------------------------------------------------------------------
+| Application routes
+|--------------------------------------------------------------------------
+*/
