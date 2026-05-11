@@ -1,3 +1,7 @@
 <template>
-  <NuxtPage />
+  <VantagePageLoadingSpinner />
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <VantageAlert />
 </template>

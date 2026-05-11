@@ -107,7 +107,9 @@ function generateEnvContent(exampleContent) {
   return exampleContent;
 }
 async function scaffoldProject(templateDir, targetDir, vars) {
-  await fse.copy(templateDir, targetDir);
+  await fse.copy(templateDir, targetDir, {
+    filter: (src) => path.basename(src) !== ".npmignore"
+  });
   const files = await glob("**/*", {
     cwd: targetDir,
     dot: true,

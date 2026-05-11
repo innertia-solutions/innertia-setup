@@ -42,7 +42,9 @@ export async function scaffoldProject(
   targetDir: string,
   vars: Vars
 ): Promise<void> {
-  await fse.copy(templateDir, targetDir)
+  await fse.copy(templateDir, targetDir, {
+    filter: (src) => path.basename(src) !== '.npmignore',
+  })
 
   const files = await glob('**/*', {
     cwd: targetDir,
