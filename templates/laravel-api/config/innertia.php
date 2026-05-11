@@ -46,6 +46,29 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Permissions
+    |--------------------------------------------------------------------------
+    |
+    | Define your application permissions grouped by category. Run:
+    |   php artisan innertia:permissions          — create missing permissions
+    |   php artisan innertia:permissions --prune  — also delete removed ones
+    |
+    */
+
+    'permissions' => [
+        [
+            'category'       => 'system',
+            'category_alias' => 'Sistema',
+            'permissions'    => [
+                'system.admin'           => 'Administración completa del sistema',
+                'system.roles.manage'    => 'Administrar roles',
+                'system.permissions.view'=> 'Ver permisos del sistema',
+            ],
+        ],
+    ],
+
     'auth' => [
         'email_verification' => [
             'enabled' => false,
