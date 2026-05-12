@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [
-    '@innertia-solutions/spark',   // UI: Spark components and layouts
+    '@innertia-solutions/nuxt-theme-spark',   // UI: Spark components and layouts
     '@innertia-solutions/nuxt-saas',    // Multi-tenant: subdomain detection, tenant validation, X-Tenant-Id
   ],
   modules: [

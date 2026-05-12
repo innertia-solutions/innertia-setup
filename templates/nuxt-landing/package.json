@@ -13,7 +13,7 @@
     "nuxt": "^4.4.4",
     "vue": "^3.5.33",
     "vue-router": "^5.0.6",
-    "@innertia-solutions/spark": "^0.1.1",
+    "@innertia-solutions/nuxt-theme-spark": "^0.1.1",
     "@tailwindcss/vite": "^4.0.0"
   }
 }

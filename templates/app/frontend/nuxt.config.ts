@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [
-    '@innertia-solutions/spark',        // UI: Spark components, layouts, Preline, Tailwind
+    '@innertia-solutions/nuxt-theme-spark',        // UI: Spark components, layouts, Preline, Tailwind
     '@innertia-solutions/nuxt-app',     // Auth, context, permissions, useApi
   ],
   modules: [
