@@ -19,10 +19,7 @@ const form = reactive({
   permission_ids: [],
 })
 
-const errors = reactive({
-  name: '',
-  description: '',
-})
+const errors = reactive({ name: '', description: '' })
 
 async function fetchRole() {
   loading.value = true
@@ -62,21 +59,17 @@ const groupedPermissions = computed(() => {
 })
 
 function togglePermission(permId) {
-  if (form.permission_ids.includes(permId)) {
-    form.permission_ids = form.permission_ids.filter(p => p !== permId)
-  } else {
-    form.permission_ids = [...form.permission_ids, permId]
-  }
+  form.permission_ids = form.permission_ids.includes(permId)
+    ? form.permission_ids.filter(p => p !== permId)
+    : [...form.permission_ids, permId]
 }
 
 function toggleGroup(perms) {
   const ids = perms.map(p => p.id)
   const allSelected = ids.every(id => form.permission_ids.includes(id))
-  if (allSelected) {
-    form.permission_ids = form.permission_ids.filter(id => !ids.includes(id))
-  } else {
-    form.permission_ids = [...new Set([...form.permission_ids, ...ids])]
-  }
+  form.permission_ids = allSelected
+    ? form.permission_ids.filter(id => !ids.includes(id))
+    : [...new Set([...form.permission_ids, ...ids])]
 }
 
 function isGroupSelected(perms) {
@@ -118,85 +111,64 @@ onMounted(() => {
   <div>
     <AdminPageHeader title="Editar rol" description="Modifica el nombre, descripción y permisos del rol.">
       <template #actions>
-        <AppButton
-          text="Volver"
-          severity="secondary"
-          size="sm"
-          @click="navigateTo('/backoffice/admin/roles')"
-        />
+        <AppButton text="Volver" severity="secondary" size="sm" type="link" link="/backoffice/admin/roles" />
       </template>
     </AdminPageHeader>
 
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <AppLoadingState label="Cargando rol..." />
+      <AppLoadingState />
     </div>
 
     <div v-else-if="role" class="max-w-2xl space-y-6">
-      <!-- Basic info -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-5">
-        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Información del rol</h2>
-
-        <FormsInput
-          v-model="form.name"
-          label="Nombre del rol"
-          placeholder="Ej. Supervisor"
-          :error="errors.name || null"
-        />
-
-        <FormsInput
-          v-model="form.description"
-          label="Descripción"
-          placeholder="Descripción breve del rol..."
-          :error="errors.description || null"
-        />
+      <!-- Información básica -->
+      <div class="bg-card border border-card-line rounded-xl p-6 space-y-5">
+        <h2 class="text-sm font-semibold text-foreground">Información del rol</h2>
+        <FormsInput v-model="form.name" label="Nombre del rol" placeholder="Ej. Supervisor" :error="errors.name || null" />
+        <FormsInput v-model="form.description" label="Descripción" placeholder="Descripción breve del rol..." :error="errors.description || null" />
       </div>
 
-      <!-- Permissions -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Permisos</h2>
+      <!-- Permisos -->
+      <div class="bg-card border border-card-line rounded-xl p-6">
+        <h2 class="text-sm font-semibold text-foreground mb-4">Permisos</h2>
 
         <div v-if="loadingPermissions" class="py-8 flex items-center justify-center">
-          <AppLoadingState label="Cargando permisos..." />
+          <AppLoadingState />
         </div>
 
-        <div v-else-if="!permissions.length" class="py-6">
-          <AppEmptyState title="Sin permisos" description="No hay permisos disponibles." />
-        </div>
+        <AppEmptyState v-else-if="!permissions.length" title="Sin permisos" description="No hay permisos disponibles." />
 
-        <div v-else class="space-y-5">
+        <div v-else class="space-y-4">
           <div
             v-for="(perms, category) in groupedPermissions"
             :key="category"
-            class="border border-slate-100 dark:border-slate-700 rounded-lg overflow-hidden"
+            class="border border-card-line rounded-lg overflow-hidden"
           >
-            <div class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50">
+            <label class="flex items-center gap-3 px-4 py-3 bg-muted cursor-pointer">
               <input
-                :id="`group-${category}`"
                 type="checkbox"
-                class="rounded border-slate-300 dark:border-slate-600 text-blue-600"
+                class="rounded border-layer-line text-primary"
                 :checked="isGroupSelected(perms)"
                 @change="toggleGroup(perms)"
               />
-              <label :for="`group-${category}`" class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 cursor-pointer">
-                {{ category }}
-              </label>
-              <span class="ml-auto text-xs text-slate-400">{{ perms.filter(p => form.permission_ids.includes(p.id)).length }}/{{ perms.length }}</span>
-            </div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex-1">{{ category }}</span>
+              <span class="text-xs text-muted-foreground-2">
+                {{ perms.filter(p => form.permission_ids.includes(p.id)).length }}/{{ perms.length }}
+              </span>
+            </label>
+
             <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <label
                 v-for="perm in perms"
                 :key="perm.id"
-                class="flex items-center gap-2.5 cursor-pointer group"
+                class="flex items-center gap-2.5 cursor-pointer"
               >
                 <input
                   type="checkbox"
-                  class="rounded border-slate-300 dark:border-slate-600 text-blue-600"
+                  class="rounded border-layer-line text-primary"
                   :checked="form.permission_ids.includes(perm.id)"
                   @change="togglePermission(perm.id)"
                 />
-                <span class="text-sm text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
-                  {{ perm.name }}
-                </span>
+                <span class="text-sm text-foreground">{{ perm.name }}</span>
               </label>
             </div>
           </div>
@@ -204,13 +176,7 @@ onMounted(() => {
       </div>
 
       <div class="flex justify-end">
-        <AppButton
-          text="Guardar cambios"
-          severity="primary"
-          size="md"
-          :loading="saving"
-          @click="handleSave"
-        />
+        <AppButton text="Guardar cambios" severity="primary" size="md" :loading="saving" @click="handleSave" />
       </div>
     </div>
 

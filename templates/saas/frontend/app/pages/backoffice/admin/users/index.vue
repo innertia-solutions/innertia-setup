@@ -7,26 +7,32 @@ const toast = useToast()
 const loading = ref(false)
 const users = ref([])
 
+const deleteTarget = ref(null)
+const deleteLoading = ref(false)
+
 async function fetchUsers() {
   loading.value = true
   try {
     const data = await api.get('backoffice/users')
     users.value = data?.data ?? data ?? []
-  } catch (e) {
+  } catch {
     toast.error('Error al cargar los usuarios.')
   } finally {
     loading.value = false
   }
 }
 
-async function deleteUser(id) {
-  if (!confirm('¿Seguro que deseas eliminar este usuario?')) return
+async function confirmDelete() {
+  deleteLoading.value = true
   try {
-    await api.delete(`backoffice/users/${id}`)
+    await api.delete(`backoffice/users/${deleteTarget.value.id}`)
     toast.success('Usuario eliminado.')
-    await fetchUsers()
-  } catch (e) {
+    users.value = users.value.filter(u => u.id !== deleteTarget.value.id)
+    deleteTarget.value = null
+  } catch {
     toast.error('Error al eliminar el usuario.')
+  } finally {
+    deleteLoading.value = false
   }
 }
 
@@ -41,18 +47,17 @@ onMounted(fetchUsers)
           text="Nuevo usuario"
           severity="primary"
           size="sm"
-          @click="navigateTo('/backoffice/admin/users/new')"
+          type="link"
+          link="/backoffice/admin/users/new"
         />
       </template>
     </AdminPageHeader>
 
-    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <!-- Loading -->
+    <div class="bg-card border border-card-line rounded-xl overflow-hidden">
       <div v-if="loading" class="px-5 py-16 flex items-center justify-center">
-        <AppLoadingState label="Cargando usuarios..." />
+        <AppLoadingState />
       </div>
 
-      <!-- Empty -->
       <div v-else-if="!users.length" class="px-5 py-16">
         <AppEmptyState
           title="Sin usuarios"
@@ -60,27 +65,26 @@ onMounted(fetchUsers)
         />
       </div>
 
-      <!-- Table -->
       <div v-else class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-slate-50 dark:bg-slate-700/50">
+          <thead class="bg-muted border-b border-card-line">
             <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nombre</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Roles</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Estado</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Creado</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Roles</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Creado</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody class="divide-y divide-card-divider">
             <tr
               v-for="user in users"
               :key="user.id"
-              class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+              class="hover:bg-layer-hover transition-colors"
             >
-              <td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ user.name }}</td>
-              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">{{ user.email }}</td>
+              <td class="px-5 py-3 text-sm font-medium text-foreground">{{ user.name }}</td>
+              <td class="px-5 py-3 text-sm text-muted-foreground">{{ user.email }}</td>
               <td class="px-5 py-3">
                 <div class="flex flex-wrap gap-1">
                   <AppTag
@@ -90,7 +94,7 @@ onMounted(fetchUsers)
                     severity="secondary"
                     size="xs"
                   />
-                  <span v-if="!user.roles?.length" class="text-xs text-slate-400">—</span>
+                  <span v-if="!user.roles?.length" class="text-xs text-muted-foreground-2">—</span>
                 </div>
               </td>
               <td class="px-5 py-3">
@@ -100,29 +104,30 @@ onMounted(fetchUsers)
                   size="xs"
                 />
               </td>
-              <td class="px-5 py-3 text-sm text-slate-400 whitespace-nowrap">{{ user.created_at ?? '—' }}</td>
-              <td class="px-5 py-3">
-                <div class="flex items-center gap-2">
-                  <AppButton
-                    text="Ver"
-                    severity="secondary"
-                    size="xs"
-                    variant="dropdown"
-                    @click="navigateTo(`/backoffice/admin/users/${user.id}`)"
-                  />
-                  <AppButton
-                    text="Eliminar"
-                    severity="danger"
-                    size="xs"
-                    variant="dropdown"
-                    @click="deleteUser(user.id)"
-                  />
-                </div>
+              <td class="px-5 py-3 text-sm text-muted-foreground-2 whitespace-nowrap">{{ user.created_at ?? '—' }}</td>
+              <td class="px-5 py-3 text-right">
+                <AppDropdown
+                  trigger-text="···"
+                  placement="bottom-right"
+                  :items="[
+                    { label: 'Ver / Editar', type: 'button', action: () => navigateTo(`/backoffice/admin/users/${user.id}`) },
+                    { label: 'Eliminar', type: 'button', severity: 'danger', action: () => deleteTarget = user },
+                  ]"
+                />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <ModalDeleteConfirm
+      :model-value="!!deleteTarget"
+      title="Eliminar usuario"
+      :message="`¿Seguro que deseas eliminar a ${deleteTarget?.name}? Esta acción no se puede deshacer.`"
+      :loading="deleteLoading"
+      @update:model-value="deleteTarget = null"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>

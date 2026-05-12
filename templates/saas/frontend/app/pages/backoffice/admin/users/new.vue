@@ -82,13 +82,14 @@ onMounted(fetchRoles)
           text="Cancelar"
           severity="secondary"
           size="sm"
-          @click="navigateTo('/backoffice/admin/users')"
+          type="link"
+          link="/backoffice/admin/users"
         />
       </template>
     </AdminPageHeader>
 
     <div class="max-w-xl">
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-5">
+      <div class="bg-card border border-card-line rounded-xl p-6 space-y-5">
         <FormsInput
           v-model="form.name"
           label="Nombre completo"
@@ -113,31 +114,31 @@ onMounted(fetchRoles)
           :error="errors.role_id || null"
         />
 
+        <!-- Contraseña -->
         <div>
           <div class="flex items-center justify-between mb-2">
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Contraseña</label>
+            <label class="block text-sm font-medium text-foreground">Contraseña</label>
             <button
               type="button"
-              class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              class="text-xs text-primary hover:underline"
               @click="manualPassword = !manualPassword"
             >
               {{ manualPassword ? 'Auto-generar' : 'Ingresar manualmente' }}
             </button>
           </div>
 
-          <div v-if="manualPassword">
-            <FormsInput
-              v-model="form.password"
-              type="password"
-              placeholder="••••••••"
-              :error="errors.password || null"
-            />
-          </div>
+          <FormsInput
+            v-if="manualPassword"
+            v-model="form.password"
+            type="password"
+            placeholder="••••••••"
+            :error="errors.password || null"
+          />
           <div v-else class="flex items-center gap-2">
             <input
               :value="form.password"
               readonly
-              class="flex-1 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-sm font-mono text-slate-600 dark:text-slate-300"
+              class="flex-1 rounded-lg border border-layer-line bg-muted px-3 py-2 text-sm font-mono text-muted-foreground"
               placeholder="(se generará automáticamente)"
             />
             <AppButton
@@ -147,7 +148,7 @@ onMounted(fetchRoles)
               @click="generatePassword"
             />
           </div>
-          <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
+          <p v-if="!manualPassword && errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
         </div>
 
         <div class="pt-2 flex justify-end">

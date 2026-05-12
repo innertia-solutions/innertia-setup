@@ -6,7 +6,11 @@ const toast = useToast()
 
 const loading = ref(false)
 const sessions = ref([])
-const revokingId = ref(null)
+
+const revokeTarget = ref(null)
+const revokeLoading = ref(false)
+const showRevokeAll = ref(false)
+const revokeAllLoading = ref(false)
 
 async function fetchSessions() {
   loading.value = true
@@ -20,28 +24,31 @@ async function fetchSessions() {
   }
 }
 
-async function revokeSession(id) {
-  if (!confirm('¿Seguro que deseas revocar esta sesión?')) return
-  revokingId.value = id
+async function confirmRevoke() {
+  revokeLoading.value = true
   try {
-    await api.delete(`backoffice/sessions/${id}`)
+    await api.delete(`backoffice/sessions/${revokeTarget.value.id}`)
     toast.success('Sesión revocada.')
-    sessions.value = sessions.value.filter(s => s.id !== id)
+    sessions.value = sessions.value.filter(s => s.id !== revokeTarget.value.id)
+    revokeTarget.value = null
   } catch (e) {
     toast.error(e?.data?.message ?? 'Error al revocar la sesión.')
   } finally {
-    revokingId.value = null
+    revokeLoading.value = false
   }
 }
 
-async function revokeAll() {
-  if (!confirm('¿Seguro que deseas revocar TODAS las sesiones activas?')) return
+async function confirmRevokeAll() {
+  revokeAllLoading.value = true
   try {
     await api.delete('backoffice/sessions')
     toast.success('Todas las sesiones han sido revocadas.')
     sessions.value = []
+    showRevokeAll.value = false
   } catch (e) {
     toast.error(e?.data?.message ?? 'Error al revocar las sesiones.')
+  } finally {
+    revokeAllLoading.value = false
   }
 }
 
@@ -57,14 +64,14 @@ onMounted(fetchSessions)
           text="Revocar todas"
           severity="danger"
           size="sm"
-          @click="revokeAll"
+          @click="showRevokeAll = true"
         />
       </template>
     </AdminPageHeader>
 
-    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div class="bg-card border border-card-line rounded-xl overflow-hidden">
       <div v-if="loading" class="px-5 py-16 flex items-center justify-center">
-        <AppLoadingState label="Cargando sesiones..." />
+        <AppLoadingState />
       </div>
 
       <div v-else-if="!sessions.length" class="px-5 py-16">
@@ -76,46 +83,45 @@ onMounted(fetchSessions)
 
       <div v-else class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-slate-50 dark:bg-slate-700/50">
+          <thead class="bg-muted border-b border-card-line">
             <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Usuario</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">IP</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Dispositivo</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Último acceso</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Usuario</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">IP</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Dispositivo</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Último acceso</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody class="divide-y divide-card-divider">
             <tr
               v-for="session in sessions"
               :key="session.id"
-              class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+              class="hover:bg-layer-hover transition-colors"
             >
               <td class="px-5 py-3">
-                <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
+                <p class="text-sm font-medium text-foreground">
                   {{ session.user?.name ?? session.user_name ?? '—' }}
                 </p>
-                <p class="text-xs text-slate-400">
+                <p class="text-xs text-muted-foreground-2">
                   {{ session.user?.email ?? session.user_email ?? '' }}
                 </p>
               </td>
-              <td class="px-5 py-3 text-sm font-mono text-slate-500 dark:text-slate-400">
+              <td class="px-5 py-3 text-sm font-mono text-muted-foreground">
                 {{ session.ip_address ?? session.ip ?? '—' }}
               </td>
-              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">
+              <td class="px-5 py-3 text-sm text-muted-foreground">
                 {{ session.device ?? session.user_agent ?? '—' }}
               </td>
-              <td class="px-5 py-3 text-sm text-slate-400 whitespace-nowrap">
+              <td class="px-5 py-3 text-sm text-muted-foreground-2 whitespace-nowrap">
                 {{ session.last_activity_at ?? session.last_activity ?? '—' }}
               </td>
-              <td class="px-5 py-3">
+              <td class="px-5 py-3 text-right">
                 <AppButton
                   text="Revocar"
                   severity="danger"
                   size="xs"
                   variant="dropdown"
-                  :loading="revokingId === session.id"
-                  @click="revokeSession(session.id)"
+                  @click="revokeTarget = session"
                 />
               </td>
             </tr>
@@ -123,5 +129,26 @@ onMounted(fetchSessions)
         </table>
       </div>
     </div>
+
+    <!-- Revocar sesión individual -->
+    <ModalDeleteConfirm
+      :model-value="!!revokeTarget"
+      title="Revocar sesión"
+      :message="`¿Seguro que deseas revocar la sesión de ${revokeTarget?.user?.name ?? revokeTarget?.user_name ?? 'este usuario'}?`"
+      confirm-text="Revocar"
+      :loading="revokeLoading"
+      @update:model-value="revokeTarget = null"
+      @confirm="confirmRevoke"
+    />
+
+    <!-- Revocar todas -->
+    <ModalDeleteConfirm
+      v-model="showRevokeAll"
+      title="Revocar todas las sesiones"
+      message="¿Seguro que deseas revocar TODAS las sesiones activas? Todos los usuarios serán desconectados."
+      confirm-text="Revocar todas"
+      :loading="revokeAllLoading"
+      @confirm="confirmRevokeAll"
+    />
   </div>
 </template>

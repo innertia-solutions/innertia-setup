@@ -57,11 +57,9 @@ function clearErrors() {
 }
 
 function toggleRole(roleId) {
-  if (form.role_ids.includes(roleId)) {
-    form.role_ids = form.role_ids.filter(r => r !== roleId)
-  } else {
-    form.role_ids = [...form.role_ids, roleId]
-  }
+  form.role_ids = form.role_ids.includes(roleId)
+    ? form.role_ids.filter(r => r !== roleId)
+    : [...form.role_ids, roleId]
 }
 
 async function handleSave() {
@@ -69,11 +67,7 @@ async function handleSave() {
   saving.value = true
   try {
     await api.put(`backoffice/users/${id.value}`, {
-      body: {
-        name: form.name,
-        email: form.email,
-        role_ids: form.role_ids,
-      }
+      body: { name: form.name, email: form.email, role_ids: form.role_ids }
     })
     toast.success('Usuario actualizado correctamente.')
   } catch (e) {
@@ -99,19 +93,20 @@ onMounted(() => {
           text="Volver"
           severity="secondary"
           size="sm"
-          @click="navigateTo('/backoffice/admin/users')"
+          type="link"
+          link="/backoffice/admin/users"
         />
       </template>
     </AdminPageHeader>
 
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <AppLoadingState label="Cargando usuario..." />
+      <AppLoadingState />
     </div>
 
     <div v-else-if="user" class="max-w-xl space-y-6">
-      <!-- Edit form -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-5">
-        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Información general</h2>
+      <!-- Formulario -->
+      <div class="bg-card border border-card-line rounded-xl p-6 space-y-5">
+        <h2 class="text-sm font-semibold text-foreground">Información general</h2>
 
         <FormsInput
           v-model="form.name"
@@ -128,10 +123,10 @@ onMounted(() => {
           :error="errors.email || null"
         />
 
-        <!-- Roles -->
+        <!-- Roles toggle -->
         <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Roles</label>
-          <div v-if="loadingRoles" class="text-sm text-slate-400">Cargando roles...</div>
+          <label class="block text-sm font-medium text-foreground mb-2">Roles</label>
+          <div v-if="loadingRoles" class="text-sm text-muted-foreground">Cargando roles...</div>
           <div v-else class="flex flex-wrap gap-2">
             <button
               v-for="role in roles"
@@ -139,8 +134,8 @@ onMounted(() => {
               type="button"
               class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
               :class="form.role_ids.includes(role.id)
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-blue-400'"
+                ? 'bg-primary border-primary text-primary-foreground'
+                : 'bg-card border-card-line text-muted-foreground hover:border-primary'"
               @click="toggleRole(role.id)"
             >
               {{ role.name }}
@@ -161,15 +156,15 @@ onMounted(() => {
       </div>
 
       <!-- Meta info -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Información del sistema</h2>
+      <div class="bg-card border border-card-line rounded-xl p-6">
+        <h2 class="text-sm font-semibold text-foreground mb-4">Información del sistema</h2>
         <dl class="space-y-3">
           <div class="flex items-center justify-between">
-            <dt class="text-sm text-slate-500 dark:text-slate-400">ID</dt>
-            <dd class="text-sm font-mono text-slate-700 dark:text-slate-300">{{ user.id }}</dd>
+            <dt class="text-sm text-muted-foreground">ID</dt>
+            <dd class="text-sm font-mono text-foreground">{{ user.id }}</dd>
           </div>
           <div class="flex items-center justify-between">
-            <dt class="text-sm text-slate-500 dark:text-slate-400">Estado</dt>
+            <dt class="text-sm text-muted-foreground">Estado</dt>
             <dd>
               <AppTag
                 :text="user.active !== false ? 'Activo' : 'Inactivo'"
@@ -179,12 +174,12 @@ onMounted(() => {
             </dd>
           </div>
           <div class="flex items-center justify-between">
-            <dt class="text-sm text-slate-500 dark:text-slate-400">Creado</dt>
-            <dd class="text-sm text-slate-700 dark:text-slate-300">{{ user.created_at ?? '—' }}</dd>
+            <dt class="text-sm text-muted-foreground">Creado</dt>
+            <dd class="text-sm text-foreground">{{ user.created_at ?? '—' }}</dd>
           </div>
           <div class="flex items-center justify-between">
-            <dt class="text-sm text-slate-500 dark:text-slate-400">Última sesión</dt>
-            <dd class="text-sm text-slate-700 dark:text-slate-300">{{ user.last_login_at ?? '—' }}</dd>
+            <dt class="text-sm text-muted-foreground">Última sesión</dt>
+            <dd class="text-sm text-foreground">{{ user.last_login_at ?? '—' }}</dd>
           </div>
         </dl>
       </div>
