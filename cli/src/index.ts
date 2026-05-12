@@ -7,16 +7,17 @@ async function main() {
   const { projectName, templateId } = await runPrompts()
 
   const spinner = p.spinner()
-  spinner.start('Creating project...')
+  spinner.start('Scaffolding project...')
 
-  await createProject(projectName, templateId)
+  await createProject(projectName, templateId, (msg) => spinner.message(msg))
 
   spinner.stop('Done.')
 
-  p.outro(
-    `Project ready at ./${projectName}\n` +
-    `Next: cd ${projectName} && docker compose up`
-  )
+  const nextSteps = projectName === '.'
+    ? 'docker compose up'
+    : `cd ${projectName} && docker compose up`
+
+  p.outro(`Project ready!\nNext: ${nextSteps}`)
 }
 
 main().catch(err => {

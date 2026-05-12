@@ -6,7 +6,7 @@ import { runPostInstall } from './post-install.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-export async function createProject(projectName: string, templateId: string): Promise<void> {
+export async function createProject(projectName: string, templateId: string, onMessage?: (msg: string) => void): Promise<void> {
   const templateDir = path.resolve(__dirname, '../templates', templateId)
   const targetDir = projectName === '.'
     ? process.cwd()
@@ -14,7 +14,7 @@ export async function createProject(projectName: string, templateId: string): Pr
 
   const vars = buildVars(projectName)
   await scaffoldProject(templateDir, targetDir, vars)
-  runPostInstall(targetDir)
+  runPostInstall(targetDir, onMessage)
 }
 
 // Allow running directly: npx tsx scripts/create.ts my-project app
