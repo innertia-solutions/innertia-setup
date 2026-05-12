@@ -53,7 +53,7 @@ onMounted(fetchUsers)
       </template>
     </AdminPageHeader>
 
-    <div class="bg-card border border-card-line rounded-xl overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
       <div v-if="loading" class="px-5 py-16 flex items-center justify-center">
         <AppLoadingState />
       </div>
@@ -67,24 +67,24 @@ onMounted(fetchUsers)
 
       <div v-else class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-muted border-b border-card-line">
+          <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Roles</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Creado</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Roles</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Creado</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-card-divider">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
             <tr
               v-for="user in users"
               :key="user.id"
-              class="hover:bg-layer-hover transition-colors"
+              class="hover:bg-slate-50 dark:bg-slate-700/30 transition-colors"
             >
-              <td class="px-5 py-3 text-sm font-medium text-foreground">{{ user.name }}</td>
-              <td class="px-5 py-3 text-sm text-muted-foreground">{{ user.email }}</td>
+              <td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ user.name }}</td>
+              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">{{ user.email }}</td>
               <td class="px-5 py-3">
                 <div class="flex flex-wrap gap-1">
                   <AppTag
@@ -94,7 +94,7 @@ onMounted(fetchUsers)
                     severity="secondary"
                     size="xs"
                   />
-                  <span v-if="!user.roles?.length" class="text-xs text-muted-foreground-2">—</span>
+                  <span v-if="!user.roles?.length" class="text-xs text-slate-400">—</span>
                 </div>
               </td>
               <td class="px-5 py-3">
@@ -104,7 +104,7 @@ onMounted(fetchUsers)
                   size="xs"
                 />
               </td>
-              <td class="px-5 py-3 text-sm text-muted-foreground-2 whitespace-nowrap">{{ user.created_at ?? '—' }}</td>
+              <td class="px-5 py-3 text-sm text-slate-400 whitespace-nowrap">{{ user.created_at ?? '—' }}</td>
               <td class="px-5 py-3 text-right">
                 <AppDropdown
                   trigger-text="···"

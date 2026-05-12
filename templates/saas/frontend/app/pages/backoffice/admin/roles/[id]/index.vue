@@ -121,15 +121,15 @@ onMounted(() => {
 
     <div v-else-if="role" class="max-w-2xl space-y-6">
       <!-- Información básica -->
-      <div class="bg-card border border-card-line rounded-xl p-6 space-y-5">
-        <h2 class="text-sm font-semibold text-foreground">Información del rol</h2>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 space-y-5">
+        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Información del rol</h2>
         <FormsInput v-model="form.name" label="Nombre del rol" placeholder="Ej. Supervisor" :error="errors.name || null" />
         <FormsInput v-model="form.description" label="Descripción" placeholder="Descripción breve del rol..." :error="errors.description || null" />
       </div>
 
       <!-- Permisos -->
-      <div class="bg-card border border-card-line rounded-xl p-6">
-        <h2 class="text-sm font-semibold text-foreground mb-4">Permisos</h2>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Permisos</h2>
 
         <div v-if="loadingPermissions" class="py-8 flex items-center justify-center">
           <AppLoadingState />
@@ -141,17 +141,17 @@ onMounted(() => {
           <div
             v-for="(perms, category) in groupedPermissions"
             :key="category"
-            class="border border-card-line rounded-lg overflow-hidden"
+            class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden"
           >
-            <label class="flex items-center gap-3 px-4 py-3 bg-muted cursor-pointer">
+            <label class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 cursor-pointer">
               <input
                 type="checkbox"
-                class="rounded border-layer-line text-primary"
+                class="rounded border-slate-300 dark:border-slate-600 text-blue-600 dark:text-blue-400"
                 :checked="isGroupSelected(perms)"
                 @change="toggleGroup(perms)"
               />
-              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex-1">{{ category }}</span>
-              <span class="text-xs text-muted-foreground-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex-1">{{ category }}</span>
+              <span class="text-xs text-slate-400">
                 {{ perms.filter(p => form.permission_ids.includes(p.id)).length }}/{{ perms.length }}
               </span>
             </label>
@@ -164,11 +164,11 @@ onMounted(() => {
               >
                 <input
                   type="checkbox"
-                  class="rounded border-layer-line text-primary"
+                  class="rounded border-slate-300 dark:border-slate-600 text-blue-600 dark:text-blue-400"
                   :checked="form.permission_ids.includes(perm.id)"
                   @change="togglePermission(perm.id)"
                 />
-                <span class="text-sm text-foreground">{{ perm.name }}</span>
+                <span class="text-sm text-slate-800 dark:text-slate-200">{{ perm.name }}</span>
               </label>
             </div>
           </div>

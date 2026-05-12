@@ -53,7 +53,7 @@ onMounted(fetchRoles)
       </template>
     </AdminPageHeader>
 
-    <div class="bg-card border border-card-line rounded-xl overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
       <div v-if="loading" class="px-5 py-16 flex items-center justify-center">
         <AppLoadingState />
       </div>
@@ -67,27 +67,27 @@ onMounted(fetchRoles)
 
       <div v-else class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-muted border-b border-card-line">
+          <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Descripción</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Permisos</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Usuarios</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Descripción</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Permisos</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Usuarios</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-card-divider">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
             <tr
               v-for="role in roles"
               :key="role.id"
-              class="hover:bg-layer-hover transition-colors"
+              class="hover:bg-slate-50 dark:bg-slate-700/30 transition-colors"
             >
-              <td class="px-5 py-3 text-sm font-semibold text-foreground">{{ role.name }}</td>
-              <td class="px-5 py-3 text-sm text-muted-foreground">{{ role.description ?? '—' }}</td>
-              <td class="px-5 py-3 text-sm text-foreground">
+              <td class="px-5 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200">{{ role.name }}</td>
+              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">{{ role.description ?? '—' }}</td>
+              <td class="px-5 py-3 text-sm text-slate-800 dark:text-slate-200">
                 {{ role.permissions_count ?? role.permissions?.length ?? '—' }}
               </td>
-              <td class="px-5 py-3 text-sm text-foreground">
+              <td class="px-5 py-3 text-sm text-slate-800 dark:text-slate-200">
                 {{ role.users_count ?? role.users?.length ?? '—' }}
               </td>
               <td class="px-5 py-3 text-right">

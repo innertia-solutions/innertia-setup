@@ -89,7 +89,7 @@ onMounted(fetchRoles)
     </AdminPageHeader>
 
     <div class="max-w-xl">
-      <div class="bg-card border border-card-line rounded-xl p-6 space-y-5">
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 space-y-5">
         <FormsInput
           v-model="form.name"
           label="Nombre completo"
@@ -117,10 +117,10 @@ onMounted(fetchRoles)
         <!-- Contraseña -->
         <div>
           <div class="flex items-center justify-between mb-2">
-            <label class="block text-sm font-medium text-foreground">Contraseña</label>
+            <label class="block text-sm font-medium text-slate-800 dark:text-slate-200">Contraseña</label>
             <button
               type="button"
-              class="text-xs text-primary hover:underline"
+              class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
               @click="manualPassword = !manualPassword"
             >
               {{ manualPassword ? 'Auto-generar' : 'Ingresar manualmente' }}
@@ -138,7 +138,7 @@ onMounted(fetchRoles)
             <input
               :value="form.password"
               readonly
-              class="flex-1 rounded-lg border border-layer-line bg-muted px-3 py-2 text-sm font-mono text-muted-foreground"
+              class="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3 py-2 text-sm font-mono text-slate-500 dark:text-slate-400"
               placeholder="(se generará automáticamente)"
             />
             <AppButton
