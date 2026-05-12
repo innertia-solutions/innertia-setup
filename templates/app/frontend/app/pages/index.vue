@@ -1,5 +1,7 @@
+<script setup>
+await navigateTo('/backoffice', { replace: true })
+</script>
+
 <template>
-  <div>
-    <h1>{{PROJECT_NAME}}</h1>
-  </div>
+  <div />
 </template>
