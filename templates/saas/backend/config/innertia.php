@@ -95,6 +95,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mail / Email Branding
+    |--------------------------------------------------------------------------
+    */
+
+    'mail' => [
+        'logo_url'    => env('MAIL_LOGO_URL', null),
+        'brand_color' => env('MAIL_BRAND_COLOR', '#6366f1'),
+    ],
+
     'auth' => [
         'email_verification' => [
             'enabled' => false,
