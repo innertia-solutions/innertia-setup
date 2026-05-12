@@ -107,6 +107,19 @@ return [
     ],
 
     'auth' => [
+        /*
+        |----------------------------------------------------------------------
+        | User Model
+        |----------------------------------------------------------------------
+        |
+        | The Eloquent model used for authentication. Innertia registers the
+        | JWT api guard and providers automatically — you don't need to touch
+        | config/auth.php. Override here if your User model path differs.
+        |
+        */
+
+        'user_model' => \App\Models\User::class,
+
         'email_verification' => [
             'enabled' => false,
             'ttl'     => 60,    // minutes
