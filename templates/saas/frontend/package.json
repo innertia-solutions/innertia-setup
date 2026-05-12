@@ -13,7 +13,9 @@
     "nuxt": "^4.4.4",
     "vue": "^3.5.33",
     "vue-router": "^5.0.6",
-"@innertia-solutions/nuxt-saas": "^0.1.0",
-    "@innertia-solutions/nuxt-themes": "^0.1.1"
+    "@innertia-solutions/nuxt-saas": "^0.1.0",
+    "@innertia-solutions/spark": "^0.1.1",
+    "@pinia/nuxt": "^0.11.0",
+    "pinia-plugin-persistedstate": "^4.0.0"
   }
 }

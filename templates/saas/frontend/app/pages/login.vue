@@ -33,7 +33,7 @@ async function handleSubmit() {
     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Ingresa tus credenciales para continuar.</p>
 
     <form class="mt-6 space-y-4" @submit.prevent="handleSubmit">
-      <VantageInput
+      <FormsInput
         v-model="email"
         type="email"
         label="Correo electrónico"
@@ -41,7 +41,7 @@ async function handleSubmit() {
         autocomplete="email"
       />
 
-      <VantageInput
+      <FormsInput
         v-model="password"
         type="password"
         label="Contraseña"
@@ -50,7 +50,7 @@ async function handleSubmit() {
         :error="error || null"
       />
 
-      <VantageButton
+      <AppButton
         text="Ingresar"
         severity="primary"
         size="md"

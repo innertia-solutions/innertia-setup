@@ -1,10 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [
-    '@innertia-solutions/nuxt-themes',  // UI: Vantage components, layouts, Preline
+    '@innertia-solutions/spark',   // UI: Spark components and layouts
     '@innertia-solutions/nuxt-saas',    // Multi-tenant: subdomain detection, tenant validation, X-Tenant-Id
   ],
-compatibilityDate: '2025-07-15',
+  modules: [
+    '@pinia/nuxt',
+    'pinia-plugin-persistedstate/nuxt',
+  ],
+  compatibilityDate: '2025-07-15',
   ssr: true,
   devServer: {
     host: '0.0.0.0'

@@ -2,19 +2,19 @@
 const config = useRuntimeConfig()
 
 onMounted(() => {
-  sessionStorage.removeItem('vantage-entered')
+  sessionStorage.removeItem('auth-entered')
 })
 </script>
 
 <template>
-  <vantage-auth>
+  <LayoutAuth>
     <template #logo>
       <span class="text-2xl font-bold text-slate-900 dark:text-white">
         {{ config.public.appName }}
       </span>
     </template>
     <template #theme-switch>
-      <VantageSwitchColorTheme />
+      <AppSwitchColorTheme />
     </template>
-  </vantage-auth>
+  </LayoutAuth>
 </template>
