@@ -1,3 +1,7 @@
 <template>
-  <NuxtPage />
+  <AppPageLoadingSpinner />
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <ToastContainer />
 </template>
