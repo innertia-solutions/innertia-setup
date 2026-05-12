@@ -2,62 +2,74 @@ Generate complete domain scaffolding for: $ARGUMENTS
 
 ## What to do
 
-Read `CLAUDE.md` first to understand the architecture rules, then generate all files for the requested domain/feature.
-
 If `$ARGUMENTS` is empty, ask the user: "¿Qué dominio quieres generar? (e.g. Products, Orders, Invoices)"
+
+Read `CLAUDE.md` to understand project conventions, then follow the two-phase process below.
 
 ---
 
-## Files to generate
+## Phase 1 — Generate skeleton with Artisan (fast, no tokens)
 
-Given domain **$ARGUMENTS** (infer model name = singular, domain = plural):
+Infer names from `$ARGUMENTS`:
+- **Domain** = plural StudlyCase  (e.g. `Products`)
+- **Model**  = singular StudlyCase (e.g. `Product`)
+- **table**  = snake_case plural   (e.g. `products`)
 
-### 1. Migration
-`database/migrations/{timestamp}_create_{table}_table.php`
-- Use `$table->uuid('id')->primary()`
-- Add `$table->string('name')` and any other obvious fields based on the domain name
-- Add `$table->timestamps()` and `$table->softDeletes()`
+Run these commands inside `backend/` (adjust path if the project has no `backend/` subdirectory):
 
-### 2. Model
-`app/Domains/{Domain}/Models/{Model}.php`
-- Extend `Illuminate\Database\Eloquent\Model`
-- Use traits: `Auditable`, `HasHistory`, `HasUuid`, `SoftDeletes` (all from `Innertia\Traits\`)
-- Set `$fillable` with the migration fields
-- Add `casts()` method for boolean/date fields
+```bash
+php artisan innertia:make:model {Model} --domain={Domain} --migration --factory
+php artisan innertia:make:usecase Create{Model} --domain={Domain} --model={Model}
+php artisan innertia:make:usecase Update{Model} --domain={Domain} --model={Model}
+php artisan innertia:make:usecase Delete{Model} --domain={Domain} --model={Model}
+php artisan innertia:make:controller {Model}Controller --app=BackOffice --domain={Domain} --model={Model}
+```
 
-### 3. UseCases
-`app/Domains/{Domain}/UseCases/Create{Model}.php`
-- Constructor with typed params matching model fields
-- Validates uniqueness if there's an obvious unique field
-- Creates and returns model
+---
 
-`app/Domains/{Domain}/UseCases/Update{Model}.php`
-- Constructor: `string $id`, then nullable params for each field
-- Throws `NotFoundException` if not found
-- Only updates non-null fields
-- Returns updated model
+## Phase 2 — Enrich the generated files
 
-`app/Domains/{Domain}/UseCases/Delete{Model}.php`
-- Constructor: `string $id`
-- Throws `NotFoundException` if not found
-- Soft-deletes and returns void
+Read every file that was just created and improve it based on the domain name and project context:
 
-### 4. Controller
-`app/Apps/BackOffice/{Domain}/Controllers/{Model}Controller.php`
-- Full CRUD with DataTable, UseCases, validation
-- All methods return `JsonResponse`
+### Migration
+- Replace the placeholder `name` column with fields that actually make sense for the domain.
+- Add `uuid`, `timestamps`, `softDeletes` if not present.
+- Add obvious columns (e.g. for `Invoices`: `number`, `amount`, `status`, `due_date`).
+- **SaaS note:** if the model belongs to a tenant (and the project uses single-DB strategy), add `$table->uuid('tenant_id')->index()` and note that the model needs a `TenantScope` or the `BelongsToTenant` trait from stancl/tenancy.
 
-### 5. Routes
-Suggest lines for `routes/api.php` under the appropriate middleware group (tenant or central).
+### Model
+- Update `$fillable` to match the migration fields.
+- Add `casts()` for booleans, dates, enums.
+- Add obvious relationships (e.g. `Invoice belongsTo Client`).
+- **SaaS note:** add a comment if `BelongsToTenant` / `TenantScope` should be applied.
+
+### Create{Model} UseCase
+- Add constructor parameters matching the migration fields (required ones).
+- Validate uniqueness if there is an obvious unique field (e.g. `number`, `email`, `code`).
+  Use `ConflictException` from `Innertia\Exceptions\ConflictException`.
+- Call `{Model}::create([...])` with all fields and return the model.
+
+### Update{Model} UseCase
+- Constructor: `string $id`, then nullable params for each field.
+- Throw `NotFoundException` (`Innertia\Exceptions\NotFoundException`) if not found.
+- Only update non-null params (`array_filter` or explicit checks).
+- Return the updated model.
+
+### Delete{Model} UseCase
+- Constructor: `string $id`.
+- Throw `NotFoundException` if not found.
+- Soft-delete and return void.
+
+### Controller
+- Update `index` columns list to match real fields.
+- Update `store` / `update` validation rules to match the fields.
+- Wire UseCase constructor calls with real field names from `$request->validated()`.
 
 ---
 
 ## Rules
 
-- Follow the patterns in `CLAUDE.md` exactly
-- This is a SaaS app — models are tenant-scoped. If the model belongs to a tenant, add a note about adding `BelongsToTenant` scope from stancl/tenancy or a `tenant_id` column if using single-DB strategy
-- Use `Innertia\Exceptions\NotFoundException` and `ConflictException`
-- Use `Innertia\Platform\Contracts\UseCase` as base
-- IDs are always UUID strings
-- Never put business logic in controllers
-- After generating all files, print a summary table of what was created
+- IDs are always UUID strings — never integers in signatures.
+- Never put business logic in controllers — delegate to UseCases.
+- Follow every pattern in `CLAUDE.md` exactly.
+- After both phases, print a summary table of created/modified files.
