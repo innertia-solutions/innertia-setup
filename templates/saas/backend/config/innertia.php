@@ -23,8 +23,8 @@ return [
 
     'saas' => [
         // Extend this model in your app if you need extra tenant columns.
-        // class Tenant extends \Innertia\Models\Tenant { ... }
-        'tenant_model' => \Innertia\Models\Tenant::class,
+        // class Tenant extends \Innertia\Saas\Models\Tenant { ... }
+        'tenant_model' => \Innertia\Saas\Models\Tenant::class,
 
         // 'single' — all tenants share one database (tenant_id on every table)
         // 'multi'  — each tenant gets its own database
