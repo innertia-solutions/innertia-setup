@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         Permissions::sync();
 
         // 2. Create super-admin role (bypasses all gates via Gate::before in InnertiaServiceProvider)
-        $role = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'api']);
+        $role = Role::firstOrCreate(['name' => 'super-admin']);
 
         // 3. Create admin user
         $admin = User::firstOrCreate(
