@@ -58,32 +58,9 @@ return [
     */
 
     'permissions' => [
-        [
-            'category'       => 'users',
-            'category_alias' => 'Usuarios',
-            'permissions'    => [
-                'users.view'           => 'Ver lista de usuarios y detalles',
-                'users.manage'         => 'Crear, editar y eliminar usuarios',
-                'users.assign_roles'   => 'Asignar roles a usuarios',
-                'users.reset_password' => 'Restablecer contraseñas de usuarios',
-            ],
-        ],
-        [
-            'category'       => 'roles',
-            'category_alias' => 'Roles',
-            'permissions'    => [
-                'roles.view'   => 'Ver roles y sus permisos',
-                'roles.manage' => 'Crear, editar y eliminar roles',
-            ],
-        ],
-        [
-            'category'       => 'permissions',
-            'category_alias' => 'Permisos',
-            'permissions'    => [
-                'permissions.view' => 'Ver permisos disponibles del sistema',
-                'permissions.sync' => 'Sincronizar permisos con el sistema',
-            ],
-        ],
+        \App\Domains\Users\Enums\UserPermissions::class,
+        \App\Domains\Roles\Enums\RolePermissions::class,
+        \App\Domains\Permissions\Enums\PermissionPermissions::class,
     ],
 
     /*
@@ -125,7 +102,7 @@ return [
         |
         */
 
-        'user_model' => \App\Models\User::class,
+        'user_model' => \App\Domains\Users\Models\User::class,
 
         'email_verification' => [
             'enabled' => false,

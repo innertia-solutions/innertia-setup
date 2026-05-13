@@ -1,6 +1,6 @@
 <?php
 
-use App\Providers\AppServiceProvider;
+use App\Providers\AppProvider;
 use Innertia\InnertiaServiceProvider;
 use Stancl\Tenancy\TenancyServiceProvider;
 
@@ -10,5 +10,5 @@ return [
     // Both packages are excluded from auto-discovery (see composer.json dont-discover).
     InnertiaServiceProvider::class,
     TenancyServiceProvider::class,
-    AppServiceProvider::class,
+    AppProvider::class,
 ];
