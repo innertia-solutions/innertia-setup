@@ -101,6 +101,22 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Exports
+    |--------------------------------------------------------------------------
+    |
+    | disk    — storage disk for tenant export ZIPs (defaults to cloud disk).
+    | handler — your TenantExport subclass. When set, Olimpo's backup endpoint
+    |           automatically queues an export using this class.
+    |
+    */
+
+    'exports' => [
+        'disk'    => env('EXPORT_DISK', env('FILESYSTEM_CLOUD', 'local')),
+        'handler' => null, // e.g. \App\Exports\ExportTenantData::class
+    ],
+
     'mail' => [
         'logo_url'    => env('MAIL_LOGO_URL', null),
         'brand_color' => env('MAIL_BRAND_COLOR', '#6366f1'),
