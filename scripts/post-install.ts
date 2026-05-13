@@ -38,11 +38,17 @@ export function runPostInstall(projectDir: string, onMessage?: (msg: string) => 
     onMessage?.('Generating application key...')
     execSync('php artisan key:generate --ansi', { cwd: composerDir, stdio: 'pipe' })
 
-    // Publish framework migrations into database/migrations/ so they are visible
-    // in the project and can be inspected or customized.
+    // Publica migraciones en database/migrations/ para inspeccionarlas o personalizarlas.
     onMessage?.('Publishing migrations...')
     execSync(
       'php artisan vendor:publish --tag=innertia-migrations --no-interaction',
+      { cwd: composerDir, stdio: 'pipe' }
+    )
+
+    // Publica el stub de rutas como routes/api.php del proyecto.
+    onMessage?.('Publishing routes...')
+    execSync(
+      'php artisan vendor:publish --tag=innertia-routes --no-interaction',
       { cwd: composerDir, stdio: 'pipe' }
     )
   }
