@@ -1,8 +1,18 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+|--------------------------------------------------------------------------
+| Scheduled Tasks
+|--------------------------------------------------------------------------
+|
+| Define your application schedule here. The scheduler runs automatically
+| via the laravel-scheduler process in supervisord.conf.
+|
+| Examples:
+|   Schedule::command('emails:send')->daily();
+|   Schedule::command('reports:generate')->weeklyOn(1, '8:00');
+|   Schedule::call(fn () => (new PurgeExpiredTokens)->execute())->hourly();
+|
+*/
