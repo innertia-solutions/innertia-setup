@@ -5,7 +5,7 @@
     "description": "{{PROJECT_NAME}} API",
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "innertia-solutions/laravel-kit": "dev-main",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
