@@ -1,39 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Apps\Backoffice\Auth\Controllers\AuthController;
+use App\Apps\Backoffice\Auth\Controllers\PasswordController;
+use App\Apps\Backoffice\Users\Controllers\UsersController;
+use App\Apps\Backoffice\Roles\Controllers\RolesController;
+use App\Apps\Backoffice\Permissions\Controllers\PermissionsController;
+use Innertia\Auth\Middleware\Authenticate;
 
 /*
 |--------------------------------------------------------------------------
-| Innertia auth + platform routes (innertia-solutions/laravel-kit)
+| Innertia platform routes (innertia-solutions/laravel-kit)
 |--------------------------------------------------------------------------
 |
-| Auth
-|   POST   /auth/login
-|   POST   /auth/otp/send            POST /auth/otp/verify
-|   POST   /auth/2fa/verify
-|   POST   /auth/email/verify/send   GET  /auth/email/verify
-|   POST   /auth/password/change     POST /auth/password/set
-|   GET    /auth/me                  POST /auth/refresh         (protected)
-|   POST   /auth/logout                                         (protected)
-|   POST   /auth/2fa/enable          POST /auth/2fa/disable     (protected)
-|
-| Social login (configure credentials via admin endpoints below)
-|   GET    /auth/{provider}/redirect?app=   google | microsoft | github
-|   GET    /auth/{provider}/callback
-|
-| Subscriptions                                                 (protected)
-|   GET    /subscriptions
-|   POST   /subscriptions
-|   PATCH  /subscriptions/{id}
-|   DELETE /subscriptions/{id}
-|
-| Admin — social provider settings                             (protected)
-|   GET    /admin/auth/settings
-|   GET    /admin/auth/{provider}/settings
-|   PUT    /admin/auth/{provider}/settings
+| Registers: auth (login/logout/refresh/me/otp/2fa/email-verify/social),
+|            subscriptions, admin social-settings, file upload/download,
+|            notifications, backoffice (users/roles/permissions).
 |
 */
 require base_path('vendor/innertia-solutions/laravel-kit/src/Auth/routes.php');
+require base_path('vendor/innertia-solutions/laravel-kit/src/Backoffice/routes.php');
 
 /*
 |--------------------------------------------------------------------------

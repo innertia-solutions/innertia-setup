@@ -67,9 +67,9 @@ return [
     */
 
     'permissions' => [
-        \App\Domains\Users\Enums\UserPermissions::class,
-        \App\Domains\Roles\Enums\RolePermissions::class,
-        \App\Domains\Permissions\Enums\PermissionPermissions::class,
+        \App\Domains\Users\Permissions\UserPermissions::class,
+        \App\Domains\Users\Permissions\RolePermissions::class,
+        \App\Domains\Users\Permissions\SystemPermissions::class,
     ],
 
     /*
