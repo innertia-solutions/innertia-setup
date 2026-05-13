@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Apps\Backoffice\Auth
+namespace App\Apps\Backoffice\Auth;
 
 class AuthController extends \Innertia\Auth\Http\Controllers\AuthController
 {
