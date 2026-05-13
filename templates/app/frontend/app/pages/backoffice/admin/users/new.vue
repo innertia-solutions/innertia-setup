@@ -1,32 +1,46 @@
 <script setup>
 definePageMeta({ layout: 'backoffice', middleware: ['auth'] })
 
-const api = useApi()
 const toast = useToast()
+const { store } = useUsers()
+const { index: fetchRolesApi } = useRoles()
 
 const loading = ref(false)
 const loadingRoles = ref(false)
 const roles = ref([])
-const manualPassword = ref(false)
+const selectedRoles = ref([])
+
+// Activation mode: 'email' | 'manual'
+const activationMode = ref('email')
 
 const form = reactive({
   name: '',
   email: '',
-  role_id: '',
   password: '',
+  password_confirmation: '',
 })
 
 const errors = reactive({
   name: '',
   email: '',
-  role_id: '',
   password: '',
+  password_confirmation: '',
 })
+
+function clearErrors() {
+  Object.keys(errors).forEach(k => errors[k] = '')
+}
+
+function toggleRole(roleName) {
+  selectedRoles.value = selectedRoles.value.includes(roleName)
+    ? selectedRoles.value.filter(r => r !== roleName)
+    : [...selectedRoles.value, roleName]
+}
 
 async function fetchRoles() {
   loadingRoles.value = true
   try {
-    const data = await api.get('backoffice/roles')
+    const data = await fetchRolesApi()
     roles.value = data?.data ?? data ?? []
   } catch {
     toast.error('Error al cargar los roles.')
@@ -35,27 +49,21 @@ async function fetchRoles() {
   }
 }
 
-function generatePassword() {
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%'
-  form.password = Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
-
-function clearErrors() {
-  Object.keys(errors).forEach(k => errors[k] = '')
-}
-
 async function handleSubmit() {
   clearErrors()
   loading.value = true
   try {
-    await api.post('backoffice/users', {
-      body: {
-        name: form.name,
-        email: form.email,
-        role_id: form.role_id || undefined,
-        password: form.password || undefined,
-      }
-    })
+    const payload = {
+      name: form.name,
+      email: form.email,
+      send_activation: activationMode.value === 'email',
+      roles: selectedRoles.value,
+    }
+    if (activationMode.value === 'manual') {
+      payload.password = form.password
+      payload.password_confirmation = form.password_confirmation
+    }
+    await store(payload)
     toast.success('Usuario creado correctamente.')
     await navigateTo('/backoffice/admin/users')
   } catch (e) {
@@ -66,10 +74,6 @@ async function handleSubmit() {
     loading.value = false
   }
 }
-
-const roleOptions = computed(() =>
-  roles.value.map(r => ({ value: r.id, label: r.name }))
-)
 
 onMounted(fetchRoles)
 </script>
@@ -90,6 +94,7 @@ onMounted(fetchRoles)
 
     <div class="max-w-xl">
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 space-y-5">
+
         <FormsInput
           v-model="form.name"
           label="Nombre completo"
@@ -105,50 +110,73 @@ onMounted(fetchRoles)
           :error="errors.email || null"
         />
 
-        <FormsSelect
-          v-model="form.role_id"
-          label="Rol"
-          placeholder="Seleccionar rol..."
-          :options="roleOptions"
-          :loading="loadingRoles"
-          :error="errors.role_id || null"
-        />
-
-        <!-- Contraseña -->
+        <!-- Activation mode toggle -->
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="block text-sm font-medium text-slate-800 dark:text-slate-200">Contraseña</label>
+          <label class="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Acceso</label>
+          <div class="flex gap-1 bg-slate-100 dark:bg-slate-700/50 rounded-lg p-1 w-fit mb-3">
             <button
               type="button"
-              class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-              @click="manualPassword = !manualPassword"
+              class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              :class="activationMode === 'email'
+                ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
+              @click="activationMode = 'email'"
             >
-              {{ manualPassword ? 'Auto-generar' : 'Ingresar manualmente' }}
+              Enviar email de activación
+            </button>
+            <button
+              type="button"
+              class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              :class="activationMode === 'manual'
+                ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
+              @click="activationMode = 'manual'"
+            >
+              Establecer contraseña manualmente
             </button>
           </div>
 
-          <FormsInput
-            v-if="manualPassword"
-            v-model="form.password"
-            type="password"
-            placeholder="••••••••"
-            :error="errors.password || null"
-          />
-          <div v-else class="flex items-center gap-2">
-            <input
-              :value="form.password"
-              readonly
-              class="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3 py-2 text-sm font-mono text-slate-500 dark:text-slate-400"
-              placeholder="(se generará automáticamente)"
+          <p v-if="activationMode === 'email'" class="text-xs text-slate-400 dark:text-slate-500">
+            Se enviará un email al usuario para que establezca su contraseña.
+          </p>
+
+          <div v-else class="space-y-3">
+            <FormsInput
+              v-model="form.password"
+              type="password"
+              label="Contraseña"
+              placeholder="••••••••"
+              :error="errors.password || null"
             />
-            <AppButton
-              text="Generar"
-              severity="secondary"
-              size="sm"
-              @click="generatePassword"
+            <FormsInput
+              v-model="form.password_confirmation"
+              type="password"
+              label="Confirmar contraseña"
+              placeholder="••••••••"
+              :error="errors.password_confirmation || null"
             />
           </div>
-          <p v-if="!manualPassword && errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
+        </div>
+
+        <!-- Roles -->
+        <div>
+          <label class="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Roles</label>
+          <div v-if="loadingRoles" class="text-sm text-slate-500 dark:text-slate-400">Cargando roles...</div>
+          <div v-else-if="!roles.length" class="text-sm text-slate-400">No hay roles disponibles.</div>
+          <div v-else class="flex flex-wrap gap-2">
+            <button
+              v-for="role in roles"
+              :key="role.id ?? role.name"
+              type="button"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+              :class="selectedRoles.includes(role.name)
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-blue-500'"
+              @click="toggleRole(role.name)"
+            >
+              {{ role.name }}
+            </button>
+          </div>
         </div>
 
         <div class="pt-2 flex justify-end">

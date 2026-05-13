@@ -6,12 +6,12 @@ const toast = useToast()
 
 const loading = ref(false)
 const loadingPermissions = ref(false)
-const permissions = ref([])
+const permissionGroups = ref([])
 
 const form = reactive({
   name: '',
   description: '',
-  permission_ids: [],
+  permission_names: [],
 })
 
 const errors = reactive({
@@ -22,8 +22,8 @@ const errors = reactive({
 async function fetchPermissions() {
   loadingPermissions.value = true
   try {
-    const data = await api.get('backoffice/permissions')
-    permissions.value = data?.data ?? data ?? []
+    const groups = await api.get('backoffice/permissions')
+    permissionGroups.value = groups?.data ?? groups ?? []
   } catch {
     toast.error('Error al cargar los permisos.')
   } finally {
@@ -31,32 +31,22 @@ async function fetchPermissions() {
   }
 }
 
-const groupedPermissions = computed(() => {
-  const groups = {}
-  for (const perm of permissions.value) {
-    const category = perm.category ?? perm.name?.split('.')[0] ?? 'general'
-    if (!groups[category]) groups[category] = []
-    groups[category].push(perm)
-  }
-  return groups
-})
-
-function togglePermission(id) {
-  form.permission_ids = form.permission_ids.includes(id)
-    ? form.permission_ids.filter(p => p !== id)
-    : [...form.permission_ids, id]
+function togglePermission(permName) {
+  form.permission_names = form.permission_names.includes(permName)
+    ? form.permission_names.filter(p => p !== permName)
+    : [...form.permission_names, permName]
 }
 
 function toggleGroup(perms) {
-  const ids = perms.map(p => p.id)
-  const allSelected = ids.every(id => form.permission_ids.includes(id))
-  form.permission_ids = allSelected
-    ? form.permission_ids.filter(id => !ids.includes(id))
-    : [...new Set([...form.permission_ids, ...ids])]
+  const names = perms.map(p => p.name)
+  const allSelected = names.every(name => form.permission_names.includes(name))
+  form.permission_names = allSelected
+    ? form.permission_names.filter(name => !names.includes(name))
+    : [...new Set([...form.permission_names, ...names])]
 }
 
 function isGroupSelected(perms) {
-  return perms.every(p => form.permission_ids.includes(p.id))
+  return perms.every(p => form.permission_names.includes(p.name))
 }
 
 function clearErrors() {
@@ -71,7 +61,7 @@ async function handleSubmit() {
       body: {
         name: form.name,
         description: form.description || undefined,
-        permission_ids: form.permission_ids,
+        permissions: form.permission_names,
       }
     })
     toast.success('Rol creado correctamente.')
@@ -112,12 +102,12 @@ onMounted(fetchPermissions)
           <AppLoadingState />
         </div>
 
-        <AppEmptyState v-else-if="!permissions.length" title="Sin permisos" description="No hay permisos disponibles." />
+        <AppEmptyState v-else-if="!permissionGroups.length" title="Sin permisos" description="No hay permisos disponibles." />
 
         <div v-else class="space-y-4">
           <div
-            v-for="(perms, category) in groupedPermissions"
-            :key="category"
+            v-for="group in permissionGroups"
+            :key="group.category"
             class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden"
           >
             <!-- Cabecera grupo -->
@@ -125,30 +115,32 @@ onMounted(fetchPermissions)
               <input
                 type="checkbox"
                 class="rounded border-slate-300 dark:border-slate-600 text-blue-600 dark:text-blue-400"
-                :checked="isGroupSelected(perms)"
-                @change="toggleGroup(perms)"
+                :checked="isGroupSelected(group.permissions)"
+                @change="toggleGroup(group.permissions)"
               />
-              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex-1">{{ category }}</span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex-1">{{ group.category_alias }}</span>
               <span class="text-xs text-slate-400">
-                {{ perms.filter(p => form.permission_ids.includes(p.id)).length }}/{{ perms.length }}
+                {{ group.permissions.filter(p => form.permission_names.includes(p.name)).length }}/{{ group.permissions.length }}
               </span>
             </label>
 
             <!-- Permisos individuales -->
             <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <label
-                v-for="perm in perms"
+                v-for="perm in group.permissions"
                 :key="perm.id"
-                class="flex items-center gap-2.5 cursor-pointer"
+                class="flex items-start gap-2.5 cursor-pointer"
               >
                 <input
                   type="checkbox"
-                  class="rounded border-slate-300 dark:border-slate-600 text-blue-600 dark:text-blue-400"
-                  :checked="form.permission_ids.includes(perm.id)"
-                  @change="togglePermission(perm.id)"
+                  class="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-blue-600 dark:text-blue-400"
+                  :checked="form.permission_names.includes(perm.name)"
+                  @change="togglePermission(perm.name)"
                 />
-                <span class="text-sm text-slate-800 dark:text-slate-200">{{ perm.name }}</span>
-                <span v-if="perm.description" class="text-xs text-slate-400 truncate">{{ perm.description }}</span>
+                <div class="min-w-0">
+                  <span class="text-sm text-slate-800 dark:text-slate-200 block">{{ perm.name }}</span>
+                  <span v-if="perm.description" class="text-xs text-slate-400 block truncate">{{ perm.description }}</span>
+                </div>
               </label>
             </div>
           </div>

@@ -4,11 +4,16 @@ const authStore = useAuthStore()
 const config = useRuntimeConfig()
 
 const navLinks = [
-  { to: '/backoffice',                    label: 'Dashboard', icon: 'i-lucide-layout-dashboard' },
-  { to: '/backoffice/admin/users',        label: 'Usuarios',  icon: 'i-lucide-users' },
-  { to: '/backoffice/admin/roles',        label: 'Roles',     icon: 'i-lucide-shield' },
-  { to: '/backoffice/admin/sessions',     label: 'Sesiones',  icon: 'i-lucide-monitor' },
+  { to: '/backoffice',                         label: 'Dashboard', icon: 'i-lucide-layout-dashboard' },
+  { to: '/backoffice/admin/users',             label: 'Usuarios',  icon: 'i-lucide-users' },
+  { to: '/backoffice/admin/roles',             label: 'Roles',     icon: 'i-lucide-shield' },
+  { to: '/backoffice/admin/permissions',       label: 'Permisos',  icon: 'i-lucide-key' },
+  { to: '/backoffice/admin/sessions',          label: 'Sesiones',  icon: 'i-lucide-monitor' },
 ]
+
+onMounted(() => {
+  useUserRealtime().start()
+})
 </script>
 
 <template>
@@ -42,12 +47,15 @@ const navLinks = [
           </p>
           <p class="text-xs text-slate-400 truncate">{{ authStore.user?.email }}</p>
         </div>
-        <button
-          class="shrink-0 p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          @click="logout"
-        >
-          <Icon name="i-lucide-log-out" class="size-4" />
-        </button>
+        <div class="flex items-center gap-1 shrink-0">
+          <NotificationBell />
+          <button
+            class="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            @click="logout"
+          >
+            <Icon name="i-lucide-log-out" class="size-4" />
+          </button>
+        </div>
       </div>
     </template>
   </LayoutAdmin>
