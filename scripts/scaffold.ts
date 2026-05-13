@@ -69,4 +69,13 @@ export async function scaffoldProject(
     const content = await fs.readFile(examplePath, 'utf-8')
     await fs.writeFile(envPath, generateEnvContent(content), 'utf-8')
   }
+
+  // npm strips .gitignore files from packages — they are stored as _gitignore
+  // and renamed here so the generated project has proper gitignores.
+  const gitignoreTemplates = files.filter(f => path.basename(f) === '_gitignore')
+  for (const file of gitignoreTemplates) {
+    const src  = path.join(targetDir, file)
+    const dest = path.join(path.dirname(src), '.gitignore')
+    await fs.rename(src, dest)
+  }
 }
