@@ -10,9 +10,11 @@
 ## Commands
 - `docker compose up` — inicia todos los servicios
 - `docker compose exec api php artisan migrate`
+- `docker compose exec api php artisan migrate --seed`
 - `docker compose exec api php artisan tinker`
 - `docker compose exec api php artisan test`
 - `docker compose exec api php artisan route:list`
+- `docker compose exec api php artisan vendor:publish --tag=innertia-migrations` — copia migraciones del kit a database/migrations/ para inspeccionarlas o personalizarlas
 
 ## Ports
 - API: http://localhost:{{APP_PORT}}
