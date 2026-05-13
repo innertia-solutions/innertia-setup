@@ -134,7 +134,7 @@ async function scaffoldProject(templateDir, targetDir, vars) {
 
 // scripts/post-install.ts
 import { execSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, copyFileSync } from "fs";
 import path2 from "path";
 function runPostInstall(projectDir, onMessage) {
   onMessage?.("Initializing git repository...");
@@ -147,6 +147,11 @@ function runPostInstall(projectDir, onMessage) {
   const backendDir = path2.join(projectDir, "backend");
   const composerDir = existsSync(path2.join(backendDir, "composer.json")) ? backendDir : existsSync(path2.join(projectDir, "composer.json")) ? projectDir : null;
   if (composerDir) {
+    const envExample = path2.join(composerDir, ".env.example");
+    const envFile = path2.join(composerDir, ".env");
+    if (existsSync(envExample) && !existsSync(envFile)) {
+      copyFileSync(envExample, envFile);
+    }
     onMessage?.("Installing PHP dependencies...");
     execSync("composer install", { cwd: composerDir, stdio: "pipe" });
   }

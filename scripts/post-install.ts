@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync, copyFileSync } from 'fs'
 import path from 'path'
 
 export function runPostInstall(projectDir: string, onMessage?: (msg: string) => void): void {
@@ -21,6 +21,14 @@ export function runPostInstall(projectDir: string, onMessage?: (msg: string) => 
       : null
 
   if (composerDir) {
+    // Copy .env.example → .env before composer install so that
+    // the post-autoload-dump hook (php artisan package:discover) can bootstrap Laravel.
+    const envExample = path.join(composerDir, '.env.example')
+    const envFile    = path.join(composerDir, '.env')
+    if (existsSync(envExample) && !existsSync(envFile)) {
+      copyFileSync(envExample, envFile)
+    }
+
     onMessage?.('Installing PHP dependencies...')
     execSync('composer install', { cwd: composerDir, stdio: 'pipe' })
   }
