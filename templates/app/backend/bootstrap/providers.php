@@ -1,11 +1,11 @@
 <?php
 
 use App\AppProvider;
-use Innertia\InnertiaServiceProvider;
+use Innertia\InnertiaAppProvider;
 
 return [
-    // InnertiaServiceProvider must be first — it configures JWT, auth, and (in saas mode) tenancy
+    // InnertiaAppProvider must be first — it configures JWT and auth
     // before other providers read those configs.
-    InnertiaServiceProvider::class,
+    InnertiaAppProvider::class,
     AppProvider::class,
 ];
