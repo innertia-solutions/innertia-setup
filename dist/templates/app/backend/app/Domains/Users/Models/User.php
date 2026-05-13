@@ -9,9 +9,4 @@ class User extends \Innertia\Models\User
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
-
-    public function isSuperAdmin(): bool
-    {
-        return $this->hasRole('super-admin');
-    }
 }

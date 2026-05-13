@@ -1,6 +1,6 @@
 <?php
 
-use App\Providers\AppProvider;
+use App\AppProvider;
 use Innertia\InnertiaServiceProvider;
 
 return [

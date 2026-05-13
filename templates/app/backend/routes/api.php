@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Apps\Backoffice\Auth\Controllers\AuthController;
-use App\Apps\Backoffice\Auth\Controllers\PasswordController;
-use App\Apps\Backoffice\Users\Controllers\UsersController;
-use App\Apps\Backoffice\Roles\Controllers\RolesController;
-use App\Apps\Backoffice\Permissions\Controllers\PermissionsController;
+use App\Apps\Backoffice\Auth\AuthController;
+use App\Apps\Backoffice\Auth\PasswordController;
+use App\Apps\Backoffice\Users\UsersController;
+use App\Apps\Backoffice\Roles\RolesController;
+use App\Apps\Backoffice\Permissions\PermissionsController;
 use Innertia\Auth\Middleware\Authenticate;
 
 /*
