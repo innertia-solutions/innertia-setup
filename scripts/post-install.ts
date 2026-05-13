@@ -30,6 +30,8 @@ export function runPostInstall(projectDir: string, onMessage?: (msg: string) => 
     }
 
     onMessage?.('Installing PHP dependencies...')
-    execSync('composer install', { cwd: composerDir, stdio: 'pipe' })
+    // --no-scripts skips post-autoload-dump hooks (php artisan package:discover)
+    // which require a running DB/app config that doesn't exist yet during scaffolding.
+    execSync('composer install --no-scripts', { cwd: composerDir, stdio: 'pipe' })
   }
 }

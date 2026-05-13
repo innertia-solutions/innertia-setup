@@ -159,7 +159,7 @@ function runPostInstall(projectDir, onMessage) {
       copyFileSync(envExample, envFile);
     }
     onMessage?.("Installing PHP dependencies...");
-    execSync("composer install", { cwd: composerDir, stdio: "pipe" });
+    execSync("composer install --no-scripts", { cwd: composerDir, stdio: "pipe" });
   }
 }
 
