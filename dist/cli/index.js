@@ -160,6 +160,13 @@ function runPostInstall(projectDir, onMessage) {
     }
     onMessage?.("Installing PHP dependencies...");
     execSync("composer install --no-scripts", { cwd: composerDir, stdio: "pipe" });
+    onMessage?.("Generating application key...");
+    execSync("php artisan key:generate --ansi", { cwd: composerDir, stdio: "pipe" });
+    onMessage?.("Publishing migrations...");
+    execSync(
+      "php artisan vendor:publish --tag=innertia-migrations --no-interaction",
+      { cwd: composerDir, stdio: "pipe" }
+    );
   }
 }
 
