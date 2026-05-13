@@ -3,23 +3,30 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Innertia\Facades\Permissions;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Sync permissions defined in config/innertia.php
+        Permissions::sync();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // 2. Create super-admin role (bypasses all gates via Gate::before in InnertiaServiceProvider)
+        $role = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'api']);
+
+        // 3. Create admin user
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@admin.com'],
+            [
+                'name'     => 'Admin',
+                'password' => Hash::make('Admin1234!'),
+            ]
+        );
+
+        $admin->assignRole($role);
     }
 }

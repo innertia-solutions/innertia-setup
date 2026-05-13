@@ -1,13 +1,22 @@
+import tailwindcss from '@tailwindcss/vite'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [
-    '@innertia-solutions/nuxt-themes',  // UI: Vantage components, layouts, Preline
+    '@innertia-solutions/nuxt-theme-spark',        // UI: Spark components, layouts, Preline, Tailwind
     '@innertia-solutions/nuxt-app',     // Auth, context, permissions, useApi
+  ],
+  modules: [
+    '@pinia/nuxt',
+    'pinia-plugin-persistedstate/nuxt',
   ],
   compatibilityDate: '2025-07-15',
   ssr: true,
   devServer: {
     host: '0.0.0.0'
+  },
+  vite: {
+    plugins: [tailwindcss()],
   },
   runtimeConfig: {
     public: {

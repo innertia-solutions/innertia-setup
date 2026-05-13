@@ -62,7 +62,7 @@ async function runPrompts() {
 }
 
 // scripts/create.ts
-import path2 from "path";
+import path3 from "path";
 import { fileURLToPath } from "url";
 
 // scripts/scaffold.ts
@@ -134,23 +134,32 @@ async function scaffoldProject(templateDir, targetDir, vars) {
 
 // scripts/post-install.ts
 import { execSync } from "child_process";
-function runPostInstall(projectDir) {
+import { existsSync } from "fs";
+import path2 from "path";
+function runPostInstall(projectDir, onMessage) {
+  onMessage?.("Initializing git repository...");
   execSync("git init", { cwd: projectDir, stdio: "pipe" });
   execSync("git add -A", { cwd: projectDir, stdio: "pipe" });
   execSync(
     'git commit -m "chore: initial project scaffold (innertia-setup)"',
     { cwd: projectDir, stdio: "pipe", env: { ...process.env, GIT_CONFIG_COUNT: "1", GIT_CONFIG_KEY_0: "commit.gpgsign", GIT_CONFIG_VALUE_0: "false" } }
   );
+  const backendDir = path2.join(projectDir, "backend");
+  const composerDir = existsSync(path2.join(backendDir, "composer.json")) ? backendDir : existsSync(path2.join(projectDir, "composer.json")) ? projectDir : null;
+  if (composerDir) {
+    onMessage?.("Installing PHP dependencies...");
+    execSync("composer install", { cwd: composerDir, stdio: "pipe" });
+  }
 }
 
 // scripts/create.ts
-var __dirname = path2.dirname(fileURLToPath(import.meta.url));
-async function createProject(projectName, templateId) {
-  const templateDir = path2.resolve(__dirname, "../templates", templateId);
-  const targetDir = projectName === "." ? process.cwd() : path2.resolve(process.cwd(), projectName);
+var __dirname = path3.dirname(fileURLToPath(import.meta.url));
+async function createProject(projectName, templateId, onMessage) {
+  const templateDir = path3.resolve(__dirname, "../templates", templateId);
+  const targetDir = projectName === "." ? process.cwd() : path3.resolve(process.cwd(), projectName);
   const vars = buildVars(projectName);
   await scaffoldProject(templateDir, targetDir, vars);
-  runPostInstall(targetDir);
+  runPostInstall(targetDir, onMessage);
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [, , projectName, templateId] = process.argv;
@@ -168,13 +177,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 async function main() {
   const { projectName, templateId } = await runPrompts();
   const spinner2 = p2.spinner();
-  spinner2.start("Creating project...");
-  await createProject(projectName, templateId);
+  spinner2.start("Scaffolding project...");
+  await createProject(projectName, templateId, (msg) => spinner2.message(msg));
   spinner2.stop("Done.");
-  p2.outro(
-    `Project ready at ./${projectName}
-Next: cd ${projectName} && docker compose up`
-  );
+  const nextSteps = projectName === "." ? "docker compose up" : `cd ${projectName} && docker compose up`;
+  p2.outro(`Project ready!
+Next: ${nextSteps}`);
 }
 main().catch((err) => {
   console.error(err);

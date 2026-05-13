@@ -95,7 +95,47 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mail / Email Branding
+    |--------------------------------------------------------------------------
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Exports
+    |--------------------------------------------------------------------------
+    |
+    | disk    — storage disk for tenant export ZIPs (defaults to cloud disk).
+    | handler — your TenantExport subclass. When set, Olimpo's backup endpoint
+    |           automatically queues an export using this class.
+    |
+    */
+
+    'exports' => [
+        'disk'    => env('EXPORT_DISK', env('FILESYSTEM_CLOUD', 'local')),
+        'handler' => null, // e.g. \App\Exports\ExportTenantData::class
+    ],
+
+    'mail' => [
+        'logo_url'    => env('MAIL_LOGO_URL', null),
+        'brand_color' => env('MAIL_BRAND_COLOR', '#6366f1'),
+    ],
+
     'auth' => [
+        /*
+        |----------------------------------------------------------------------
+        | User Model
+        |----------------------------------------------------------------------
+        |
+        | The Eloquent model used for authentication. Innertia registers the
+        | JWT api guard and providers automatically — you don't need to touch
+        | config/auth.php. Override here if your User model path differs.
+        |
+        */
+
+        'user_model' => \App\Models\User::class,
+
         'email_verification' => [
             'enabled' => false,
             'ttl'     => 60,    // minutes

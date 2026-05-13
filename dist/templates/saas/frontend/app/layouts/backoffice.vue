@@ -4,16 +4,15 @@ const authStore = useAuthStore()
 const config = useRuntimeConfig()
 
 const navLinks = [
-  { to: '/backoffice',             label: 'Dashboard', icon: 'i-lucide-layout-dashboard' },
-  { to: '/backoffice/users',       label: 'Usuarios',  icon: 'i-lucide-users' },
-  { to: '/backoffice/roles',       label: 'Roles',     icon: 'i-lucide-shield' },
-  { to: '/backoffice/permissions', label: 'Permisos',  icon: 'i-lucide-key' },
-  { to: '/backoffice/sessions',    label: 'Sesiones',  icon: 'i-lucide-monitor' },
+  { to: '/backoffice',                    label: 'Dashboard', icon: 'i-lucide-layout-dashboard' },
+  { to: '/backoffice/admin/users',        label: 'Usuarios',  icon: 'i-lucide-users' },
+  { to: '/backoffice/admin/roles',        label: 'Roles',     icon: 'i-lucide-shield' },
+  { to: '/backoffice/admin/sessions',     label: 'Sesiones',  icon: 'i-lucide-monitor' },
 ]
 </script>
 
 <template>
-  <vantage-admin>
+  <LayoutAdmin>
     <template #logo>
       <NuxtLink to="/backoffice" class="px-3 text-base font-bold text-slate-900 dark:text-white truncate">
         {{ config.public.appName }}
@@ -51,5 +50,5 @@ const navLinks = [
         </button>
       </div>
     </template>
-  </vantage-admin>
+  </LayoutAdmin>
 </template>

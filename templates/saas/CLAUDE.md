@@ -6,7 +6,6 @@
 - PostgreSQL 16 (DB central + DBs por tenant), Redis 7
 - Docker Compose
 - `innertia-solutions/laravel-kit` — DataTable, ActivityLogger, EntityHistory, HasNanoId, Auditable
-- `spatie/laravel-permission` — roles y permisos
 - `tymon/jwt-auth` — autenticación JWT
 - `stancl/tenancy` — multitenancy automática por tenant DB
 

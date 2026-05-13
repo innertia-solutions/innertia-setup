@@ -5,7 +5,6 @@
 - PostgreSQL 16, Redis 7
 - Docker + Xdebug
 - `innertia-solutions/laravel-kit` — Auth (JWT), DataTable, ActivityLogger, EntityHistory, UseCase, DomainEvent, Webhooks, Settings
-- `spatie/laravel-permission` — roles y permisos
 - `tymon/jwt-auth` — autenticación JWT
 
 ## Commands
