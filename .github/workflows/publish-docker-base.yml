@@ -15,6 +15,7 @@ jobs:
   build-dev:
     name: php-base-dev:8.4
     runs-on: ubuntu-latest
+    environment: secrets
     permissions:
       contents: read
       packages: write
@@ -59,6 +60,7 @@ jobs:
   build-prod:
     name: php-base-prod:8.4
     runs-on: ubuntu-latest
+    environment: secrets
     permissions:
       contents: read
       packages: write
