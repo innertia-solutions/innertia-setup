@@ -17,6 +17,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Apps / Contextos de acceso
+    |--------------------------------------------------------------------------
+    |
+    | Define los contextos de la aplicación. El Login UseCase valida que el
+    | usuario tenga acceso al app antes de emitir el token JWT.
+    | Agregar más contextos según los roles de la app (ej: technician, sales).
+    |
+    */
+
+    'apps' => [
+        'backoffice' => 'Administración',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | SaaS / Tenancy Settings
     |--------------------------------------------------------------------------
     */
