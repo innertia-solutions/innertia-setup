@@ -44,10 +44,8 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-dev:cache
           cache-to:   type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-dev:cache,mode=max
 
-      # Fuerza visibilidad pública para que no se requiera login al hacer docker pull.
-      # Requiere un PAT clásico con scope "write:packages" guardado como GH_PAT en la org.
+      # Fuerza visibilidad pública. Si GH_PAT está vacío, falla silenciosamente con || true.
       - name: Make package public
-        if: ${{ secrets.GH_PAT != '' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -90,7 +88,6 @@ jobs:
           cache-to:   type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-prod:cache,mode=max
 
       - name: Make package public
-        if: ${{ secrets.GH_PAT != '' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
