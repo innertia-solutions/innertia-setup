@@ -3,20 +3,22 @@ definePageMeta({ layout: 'auth', middleware: ['guest'] })
 
 const api = useApi()
 
-const email = ref('')
+const form = useForm({
+  email: { value: '', rules: ['required', 'email'] },
+})
+
 const processing = ref(false)
 const sent = ref(false)
-const error = ref('')
 
 async function handleSubmit() {
-  if (!email.value) return
+  if (!form.validate()) return
+
   processing.value = true
-  error.value = ''
   try {
-    await api.post('auth/password/forgot', { email: email.value })
+    await api.post('auth/password/forgot', { email: form.values.email })
     sent.value = true
   } catch (e) {
-    error.value = e?.data?.message ?? 'No pudimos procesar la solicitud.'
+    form.addError('email', e?.data?.message ?? 'No pudimos procesar la solicitud.')
   } finally {
     processing.value = false
   }
@@ -54,20 +56,26 @@ async function handleSubmit() {
           Correo electrónico
         </label>
         <input
-          v-model="email"
+          v-model="form.values.email"
           type="email"
           :disabled="processing"
           autocomplete="email"
           placeholder="tu@correo.com"
-          class="py-2 sm:py-2.5 px-3 block w-full border border-slate-200 rounded-lg sm:text-sm placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 dark:bg-transparent dark:border-slate-700 dark:text-slate-300 dark:placeholder:text-white/60"
+          @blur="form.validate('email')"
+          class="py-2 sm:py-2.5 px-3 block w-full border rounded-lg sm:text-sm placeholder:text-slate-400 focus:ring-1 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:text-slate-300 dark:placeholder:text-white/60"
+          :class="form.errors.email?.length
+            ? 'border-red-400 focus:border-red-400 focus:ring-red-400'
+            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500 dark:border-slate-700 dark:focus:ring-slate-600'"
         />
-        <p v-if="error" class="mt-1.5 text-xs text-red-500">{{ error }}</p>
+        <p v-if="form.errors.email?.length" class="mt-1.5 text-xs text-red-500">
+          {{ form.errors.email[0] }}
+        </p>
       </div>
 
       <button
         type="submit"
         :disabled="processing"
-        class="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        class="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
       >
         <span v-if="processing" class="animate-spin inline-block size-4 border-[2px] border-t-transparent border-white rounded-full" />
         <span v-else class="flex items-center gap-x-2">

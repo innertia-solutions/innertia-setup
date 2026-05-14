@@ -1,5 +1,8 @@
 <?php
 
-// Este archivo se sobreescribe durante el scaffold via:
-//   php artisan vendor:publish --tag=innertia-routes
-// No editar — correr el comando de arriba para regenerarlo.
+// Punto de entrada de rutas API (SaaS mode).
+// Rutas públicas (sin auth): api.public.php
+// Rutas privadas (con auth): api.private.php
+
+require __DIR__ . '/api.public.php';
+require __DIR__ . '/api.private.php';
