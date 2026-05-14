@@ -30,16 +30,55 @@ npx tsx scripts/create.ts <nombre-proyecto> <template>
 | `nuxt-landing` | Nuxt 3 standalone para landing pages |
 | `laravel-api` | Laravel API standalone con Docker |
 | `app` | Monorepo Laravel + Nuxt + Docker Compose |
-| `saas` | Monorepo Laravel + Nuxt + Multitenancy |
+| `saas` | Monorepo Laravel + Nuxt + Multitenancy + TanStack Query |
 
-## Desarrollo
+---
 
-```bash
-npm install
-npm run dev      # corre el CLI sin build
-npm test         # corre los tests
-npm run build    # compila a dist/
+## Template `saas` — Stack completo
+
+### Servicios
+| Servicio | Puerto |
+|---|---|
+| Frontend (Nuxt) | 3000 |
+| API (Laravel) | 8100 |
+| PostgreSQL | 5437 |
+| Redis | 63791 |
+
+### Arquitectura frontend
+
+El template `saas` incluye un patrón estandarizado para todas las entidades del dominio:
+
 ```
+Componente/Página     renderiza, maneja eventos UI
+      ↕
+use{Entity}.js        qué datos, cuándo, cómo se invalidan (TanStack Query)
+      ↕
+useApi                cómo viaja la petición HTTP (headers, auth, X-Tenant)
+      ↕
+QueryClient           cache compartido entre componentes
+      ↕
+Laravel API
+```
+
+Agregar una entidad nueva (`Invoices` como ejemplo):
+
+```
+1. backend/app/Domains/Invoices/         ← modelos + usecases
+2. frontend/app/composables/useInvoices.js  ← queries + mutations
+3. frontend/app/pages/backoffice/invoices/  ← páginas que consumen el composable
+```
+
+Ver `templates/saas/CLAUDE.md` o `templates/saas/README.md` para el patrón completo con código.
+
+### Layers npm disponibles
+
+| Paquete | Versión | Descripción |
+|---|---|---|
+| `@innertia-solutions/nuxt-app` | `^0.1.8` | Auth, useApi, useEntity pattern, TanStack Query |
+| `@innertia-solutions/nuxt-saas` | `^0.1.12` | Multitenancy, subdomain, tenant-error |
+| `@innertia-solutions/nuxt-theme-spark` | `^0.1.16` | UI: DataTable, FullTable, Forms, Toast, Admin layouts |
+
+---
 
 ## Agregar un template
 
