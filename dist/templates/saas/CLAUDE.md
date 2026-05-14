@@ -5,7 +5,7 @@
 - Nuxt 3 (frontend/) — SPA/SSR
 - PostgreSQL 16, Redis 7
 - Docker Compose
-- `innertia-solutions/laravel-kit` — DataTable, ActivityLogger, EntityHistory, HasNanoId, Auditable, TenantManager
+- `innertia-solutions/laravel-innertia` — DataTable, ActivityLogger, EntityHistory, HasNanoId, Auditable, TenantManager
 - `tymon/jwt-auth` — autenticación JWT
 
 ## Commands

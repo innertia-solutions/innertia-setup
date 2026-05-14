@@ -36,7 +36,7 @@ Accede en `http://acme.localhost:{{FRONTEND_PORT}}`.
 
 ### Stack
 - Laravel 13, PHP 8.4
-- `innertia-solutions/laravel-kit` — DataTable, ActivityLogger, EntityHistory, HasNanoId, TenantManager
+- `innertia-solutions/laravel-innertia` — DataTable, ActivityLogger, EntityHistory, HasNanoId, TenantManager
 - `tymon/jwt-auth` — autenticación JWT
 - Multitenancy single-DB via `X-Tenant` header
 

@@ -4,7 +4,7 @@
 - Laravel 13, PHP 8.3
 - PostgreSQL 16, Redis 7
 - Docker + Xdebug
-- `innertia-solutions/laravel-kit` — Auth (JWT), RBAC (roles y permisos), DataTable, ActivityLogger, EntityHistory, UseCase, DomainEvent, Webhooks, Settings
+- `innertia-solutions/laravel-innertia` — Auth (JWT), RBAC (roles y permisos), DataTable, ActivityLogger, EntityHistory, UseCase, DomainEvent, Webhooks, Settings
 - `tymon/jwt-auth` — autenticación JWT
 
 ## Commands
@@ -49,7 +49,7 @@ app/
 - UseCases extienden `\Innertia\Platform\Contracts\UseCase`, reciben parámetros en constructor y devuelven resultado desde `execute()`.
 - Models viven en `app/Domains/{D}/Models/`. Nunca en `app/Models/`.
 - Rutas API en `routes/api.php` agrupadas por módulo.
-- Usar `Auditable` y `HasHistory` (de laravel-kit) en modelos que requieren trazabilidad.
+- Usar `Auditable` y `HasHistory` (de laravel-innertia) en modelos que requieren trazabilidad.
 - IDs son UUID — los modelos que extiendan `\Innertia\Models\User` ya lo incluyen. Para otros modelos, usar el trait `\Innertia\Traits\HasUuid`.
 
 ### Ejemplo de UseCase

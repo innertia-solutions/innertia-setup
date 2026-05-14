@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Auth routes (innertia-solutions/laravel-kit)
+| Auth routes (innertia-solutions/laravel-innertia)
 |--------------------------------------------------------------------------
 |
 | POST /auth/login
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 | POST /auth/2fa/enable  |  POST /auth/2fa/disable            (protected)
 |
 */
-require base_path('vendor/innertia-solutions/laravel-kit/src/Auth/routes.php');
+require base_path('vendor/innertia-solutions/laravel-innertia/src/Auth/routes.php');
 
 /*
 |--------------------------------------------------------------------------

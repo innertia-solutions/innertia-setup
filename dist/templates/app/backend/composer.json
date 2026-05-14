@@ -6,7 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "innertia-solutions/laravel-kit": "dev-main",
+        "innertia-solutions/laravel-innertia": "dev-main",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "tymon/jwt-auth": "^2.1",
