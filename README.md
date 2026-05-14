@@ -76,7 +76,7 @@ Ver `templates/saas/CLAUDE.md` o `templates/saas/README.md` para el patrón comp
 |---|---|---|
 | `@innertia-solutions/nuxt-app` | `^0.1.8` | Auth, useApi, useEntity pattern, TanStack Query |
 | `@innertia-solutions/nuxt-saas` | `^0.1.12` | Multitenancy, subdomain, tenant-error |
-| `@innertia-solutions/nuxt-theme-spark` | `^0.1.16` | UI: DataTable, FullTable, Forms, Toast, Admin layouts |
+| `@innertia-solutions/nuxt-theme-spark` | `^0.1.19` | UI: DataTable, Table, Table/Standard, Table/Kanban, Table/Grid, Table/List, Table/Database, TableFilter, TableExportable, Forms, Toast, Admin layouts |
 
 ---
 

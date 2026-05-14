@@ -214,14 +214,44 @@ const { mutate, isPending, error } = create()
 ### Componentes disponibles
 
 ```vue
-<!-- Tabla simple server-side -->
-<DataTable name="..." endpoint="..." :columns="[...]" :search="search" />
+<!-- Tabla admin estándar (search + filters + export, recomendado) -->
+<Table.Standard name="..." endpoint="..." :columns="[...]" :cached="true" @row-click="..." />
 
-<!-- Tabla avanzada con TanStack (visibility, reordenamiento, filtros por columna) -->
+<!-- Tabla TanStack completa (visibility, reordenamiento de columnas, filtros) -->
 <Table name="..." endpoint="..." :columns="[...]" :search="search" :cached="true"
   ref="tableRef" @row-click="..." />
 
-<!-- Exportar tabla -->
+<!-- Tabla simple server-side -->
+<DataTable name="..." endpoint="..." :columns="[...]" :search="search" />
+
+<!-- Vista grid/card -->
+<Table.Grid name="..." endpoint="..." :columns="[...]">
+  <template #card="{ row }">...</template>
+</Table.Grid>
+
+<!-- Scroll infinito -->
+<Table.List name="..." endpoint="...">
+  <template #item="{ row }">...</template>
+</Table.List>
+
+<!-- Kanban con DnD y updates optimistas -->
+<Table.Kanban name="..." endpoint="..." state-key="status"
+  :states="[{key:'todo',label:'Pendiente',color:'slate'}]"
+  :move-mutation="(id, state) => api.patch(`.../${id}`, { status: state })"
+  @card-click="..." />
+
+<!-- Vista database con edición de celdas inline -->
+<Table.Database name="..." endpoint="..."
+  :columns="[{ key: 'name', label: 'Nombre', editable: true }]"
+  :update-mutation="(id, field, value) => api.patch(`.../${id}`, { [field]: value })" />
+
+<!-- Panel de filtros -->
+<TableFilter v-model="filters" :columns="columns" />
+
+<!-- Modal de exportación -->
+<TableExportable :table-ref="tableRef" :columns="columns" name="reporte" />
+
+<!-- Dropdown de exportación simple -->
 <TableDownloadDropdown :table-ref="tableRef" />
 
 <!-- Layout de backoffice -->

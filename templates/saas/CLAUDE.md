@@ -156,23 +156,58 @@ Backend y frontend espejados por entidad. `useEntity.js` en `nuxt-app` es la pla
 
 ### Componentes de tabla disponibles
 
-- `<DataTable>` — tabla server-side simple (paginación, sort, search, cache, export)
-- `<Table>` — tabla con TanStack Table (+ visibility, reordenamiento de columnas, filtros por columna)
-- `<TableDownloadDropdown>` — botón de exportación (xlsx, csv, pdf, json)
+| Componente | Descripción |
+|---|---|
+| `<DataTable>` | Tabla server-side simple (paginación, sort, search, cache, export) |
+| `<Table>` | TanStack Table (visibility, reordenamiento de columnas, filtros por columna) |
+| `<Table.Standard>` | Tabla admin completa: search + filters panel + export. Default para backoffice. |
+| `<Table.Grid>` | Vista grid/card — wraps DataTable con `viewMode="grid"` |
+| `<Table.List>` | Scroll infinito con `useInfiniteQuery`, intersection observer |
+| `<Table.Kanban>` | Estados como columnas, DnD entre estados, updates optimistas |
+| `<Table.Database>` | Vista densa con edición de celdas inline (click → input → blur) |
+| `<TableFilter>` | Panel de filtros reutilizable (`filterType: 'text'|'select'|'daterange'`) |
+| `<TableExportable>` | Modal de exportación: formato, nombre de archivo, columnas a incluir |
+| `<TableDownloadDropdown>` | Dropdown de exportación simple (xlsx, csv, pdf, json) |
 
 ```vue
-<Table
+<!-- Tabla admin estándar (recomendado) -->
+<Table.Standard
   name="invoices"
   endpoint="backoffice/invoices"
   :columns="[
     { key: 'number', label: 'Número', sortable: true },
     { key: 'amount', label: 'Monto', sortable: true },
-    { key: 'status', label: 'Estado', filterable: true },
+    { key: 'status', label: 'Estado', filterable: true, filterType: 'select', filterOptions: [{value:'paid',label:'Pagado'}] },
+    { key: 'date', label: 'Fecha', filterType: 'daterange' },
   ]"
-  :search="search"
   :cached="true"
-  ref="tableRef"
   @row-click="(row) => navigateTo(`/backoffice/invoices/${row.id}`)"
+/>
+
+<!-- Kanban -->
+<Table.Kanban
+  name="tasks"
+  endpoint="backoffice/tasks"
+  state-key="status"
+  :states="[
+    { key: 'todo', label: 'Pendiente', color: 'slate' },
+    { key: 'in_progress', label: 'En progreso', color: 'blue' },
+    { key: 'done', label: 'Listo', color: 'green' },
+  ]"
+  :move-mutation="(id, state) => api.patch(`backoffice/tasks/${id}`, { status: state })"
+  @card-click="(row) => navigateTo(`/backoffice/tasks/${row.id}`)"
+/>
+
+<!-- Database (edición inline) -->
+<Table.Database
+  name="products"
+  endpoint="backoffice/products"
+  :columns="[
+    { key: 'name', label: 'Nombre', editable: true },
+    { key: 'price', label: 'Precio', editable: true, type: 'number' },
+    { key: 'category', label: 'Categoría', editable: true, type: 'select', options: [{value:'a',label:'A'}] },
+  ]"
+  :update-mutation="(id, field, value) => api.patch(`backoffice/products/${id}`, { [field]: value })"
 />
 ```
 
