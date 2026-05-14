@@ -18,7 +18,7 @@ async function handleSubmit() {
   try {
     const data = await performLogin('backoffice', form.values.email, form.values.password)
     if (data?.requires_password_change) {
-      await navigateTo('/backoffice/change-password')
+      await navigateTo('/backoffice/auth/change-password')
     } else {
       await navigateTo(config.public.homePath || '/backoffice')
     }
@@ -70,7 +70,7 @@ async function handleSubmit() {
             Contraseña
           </label>
           <NuxtLink
-            to="/forgot-password"
+            to="/backoffice/auth/forgot-password"
             class="text-xs text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:underline"
           >
             Recuperar contraseña

@@ -38,6 +38,10 @@ export function runPostInstall(projectDir: string, onMessage?: (msg: string) => 
     onMessage?.('Generating application key...')
     execSync('php artisan key:generate --ansi', { cwd: composerDir, stdio: 'pipe' })
 
+    // Generate JWT secret.
+    onMessage?.('Generating JWT secret...')
+    execSync('php artisan jwt:secret --force --no-interaction', { cwd: composerDir, stdio: 'pipe' })
+
     // Publica migraciones en database/migrations/ para inspeccionarlas o personalizarlas.
     onMessage?.('Publishing migrations...')
     execSync(

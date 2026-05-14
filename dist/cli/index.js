@@ -162,6 +162,8 @@ function runPostInstall(projectDir, onMessage) {
     execSync("composer install --no-scripts", { cwd: composerDir, stdio: "pipe" });
     onMessage?.("Generating application key...");
     execSync("php artisan key:generate --ansi", { cwd: composerDir, stdio: "pipe" });
+    onMessage?.("Generating JWT secret...");
+    execSync("php artisan jwt:secret --force --no-interaction", { cwd: composerDir, stdio: "pipe" });
     onMessage?.("Publishing migrations...");
     execSync(
       "php artisan vendor:publish --tag=innertia-migrations --no-interaction",

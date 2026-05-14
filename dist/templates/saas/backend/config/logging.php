@@ -58,6 +58,13 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        // En local: stderr (→ docker compose logs) + daily (→ storage/logs/laravel.log)
+        'local' => [
+            'driver' => 'stack',
+            'channels' => ['stderr', 'daily'],
+            'ignore_exceptions' => false,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
