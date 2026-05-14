@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
 class AppProvider extends EventServiceProvider
@@ -24,7 +25,16 @@ class AppProvider extends EventServiceProvider
 
     public function register(): void {}
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+        // El link de reset apunta al frontend SPA, no al backend Laravel.
+        ResetPassword::createUrlUsing(function ($notifiable, string $token) {
+            $base  = config('app.frontend_url', config('app.url'));
+            $email = urlencode($notifiable->getEmailForPasswordReset());
+
+            return "{$base}/reset-password?token={$token}&email={$email}";
+        });
+    }
 
     public function shouldDiscoverEvents(): bool
     {
