@@ -171,7 +171,7 @@ const { data, isLoading } = list({ search })
 
 <template>
   <AdminPage title="Facturas">
-    <FullTable name="invoices" endpoint="backoffice/invoices"
+    <Table name="invoices" endpoint="backoffice/invoices"
       :columns="[{ key: 'number', label: 'N°', sortable: true }]"
       :search="search" :cached="true"
       @row-click="(row) => navigateTo(`/backoffice/invoices/${row.id}`)" />
@@ -218,7 +218,7 @@ const { mutate, isPending, error } = create()
 <DataTable name="..." endpoint="..." :columns="[...]" :search="search" />
 
 <!-- Tabla avanzada con TanStack (visibility, reordenamiento, filtros por columna) -->
-<FullTable name="..." endpoint="..." :columns="[...]" :search="search" :cached="true"
+<Table name="..." endpoint="..." :columns="[...]" :search="search" :cached="true"
   ref="tableRef" @row-click="..." />
 
 <!-- Exportar tabla -->

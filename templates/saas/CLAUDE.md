@@ -124,7 +124,7 @@ const { mutate: createInvoice, isPending } = create()
 </script>
 
 <template>
-  <FullTable :data="invoices" :loading="isLoading" ... />
+  <Table :data="invoices" :loading="isLoading" ... />
   <button @click="createInvoice({ ... })" :disabled="isPending">Crear</button>
 </template>
 ```
@@ -157,11 +157,11 @@ Backend y frontend espejados por entidad. `useEntity.js` en `nuxt-app` es la pla
 ### Componentes de tabla disponibles
 
 - `<DataTable>` — tabla server-side simple (paginación, sort, search, cache, export)
-- `<FullTable>` — tabla con TanStack Table (+ visibility, reordenamiento de columnas, filtros por columna)
+- `<Table>` — tabla con TanStack Table (+ visibility, reordenamiento de columnas, filtros por columna)
 - `<TableDownloadDropdown>` — botón de exportación (xlsx, csv, pdf, json)
 
 ```vue
-<FullTable
+<Table
   name="invoices"
   endpoint="backoffice/invoices"
   :columns="[
