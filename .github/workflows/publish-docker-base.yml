@@ -43,6 +43,19 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-dev:cache
           cache-to:   type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-dev:cache,mode=max
 
+      # Fuerza visibilidad pública para que no se requiera login al hacer docker pull.
+      # Requiere un PAT clásico con scope "write:packages" guardado como GH_PAT en la org.
+      - name: Make package public
+        if: ${{ secrets.GH_PAT != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /orgs/${{ env.ORG }}/packages/container/php-base-dev \
+            -f visibility=public || true
+
   build-prod:
     name: php-base-prod:8.4
     runs-on: ubuntu-latest
@@ -73,3 +86,14 @@ jobs:
             ghcr.io/${{ env.ORG }}/php-base-prod:latest
           cache-from: type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-prod:cache
           cache-to:   type=registry,ref=ghcr.io/${{ env.ORG }}/php-base-prod:cache,mode=max
+
+      - name: Make package public
+        if: ${{ secrets.GH_PAT != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /orgs/${{ env.ORG }}/packages/container/php-base-prod \
+            -f visibility=public || true
