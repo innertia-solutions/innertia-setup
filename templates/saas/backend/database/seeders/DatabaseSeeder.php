@@ -28,5 +28,14 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin->assignRole($role);
+
+        // 4. Grant app access (requiere tenant activo — correr con tenant activado)
+        if (\Innertia\Facades\Innertia::tenant()) {
+            foreach (array_keys(config('innertia.apps', [])) as $app) {
+                if (! $admin->hasApp($app)) {
+                    $admin->grantApp($app);
+                }
+            }
+        }
     }
 }
