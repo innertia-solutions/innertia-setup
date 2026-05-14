@@ -21,7 +21,7 @@ export default defineNuxtConfig({
       apiBaseUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
       appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'local',
       loginPath: process.env.NUXT_PUBLIC_LOGIN_PATH || '/backoffice/login',
-      homePath: process.env.NUXT_PUBLIC_HOME_PATH || '/',
+      homePath: process.env.NUXT_PUBLIC_HOME_PATH || '/backoffice',
       timeZone: process.env.NUXT_PUBLIC_TIMEZONE || 'America/Santiago',
     }
   },
