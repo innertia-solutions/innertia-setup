@@ -6,7 +6,7 @@ use App\Domains\Users\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Innertia\Facades\Permissions;
-use Innertia\Models\Role;
+use Innertia\Auth\RBAC\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {

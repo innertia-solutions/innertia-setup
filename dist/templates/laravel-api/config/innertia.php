@@ -25,7 +25,7 @@ return [
     */
 
     // 'saas' => [
-    //     'tenant_model' => \Innertia\Models\Tenant::class,
+    //     'tenant_model' => \Innertia\Saas\Models\Tenant::class,
     //     'db_strategy'  => 'single',   // 'single' | 'multi'
     //     // 'db_prefix'  => '{{PROJECT_NAME}}_',  // only for db_strategy = 'multi'
     //     'central_domains' => ['localhost', '127.0.0.1'],

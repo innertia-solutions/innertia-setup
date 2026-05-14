@@ -167,6 +167,11 @@ function runPostInstall(projectDir, onMessage) {
       "php artisan vendor:publish --tag=innertia-migrations --no-interaction",
       { cwd: composerDir, stdio: "pipe" }
     );
+    onMessage?.("Publishing routes...");
+    execSync(
+      "php artisan vendor:publish --tag=innertia-routes --force --no-interaction",
+      { cwd: composerDir, stdio: "pipe" }
+    );
   }
 }
 

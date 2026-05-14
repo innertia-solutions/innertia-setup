@@ -45,10 +45,11 @@ export function runPostInstall(projectDir: string, onMessage?: (msg: string) => 
       { cwd: composerDir, stdio: 'pipe' }
     )
 
-    // Publica el stub de rutas como routes/api.php del proyecto.
+    // Publica los stubs de rutas (api.php, api.public.php, api.private.php).
+    // El template incluye un api.php placeholder para que artisan pueda bootear.
     onMessage?.('Publishing routes...')
     execSync(
-      'php artisan vendor:publish --tag=innertia-routes --no-interaction',
+      'php artisan vendor:publish --tag=innertia-routes --force --no-interaction',
       { cwd: composerDir, stdio: 'pipe' }
     )
   }
