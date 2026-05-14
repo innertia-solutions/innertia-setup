@@ -14,6 +14,7 @@ RUN pnpm install --no-frozen-lockfile
 
 # Exponer puerto
 ENV PORT=3000
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 EXPOSE 3000
 
 # El código será montado como volumen en compose.yml
