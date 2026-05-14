@@ -16,5 +16,6 @@ onMounted(() => {
     <template #theme-switch>
       <AppSwitchColorTheme />
     </template>
+    <slot />
   </LayoutAuth>
 </template>
