@@ -70,7 +70,7 @@ async function handleSubmit() {
             Contraseña
           </label>
           <NuxtLink
-            to="/forgot-password"
+            to="/backoffice/forgot-password"
             class="text-xs text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:underline"
           >
             Recuperar contraseña
