@@ -20,6 +20,8 @@ services:
       DB_DATABASE: {{PROJECT_NAME}}
       DB_USERNAME: root
       DB_PASSWORD: {{DB_PASSWORD}}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       XDEBUG_MODE: debug
       XDEBUG_CONFIG: client_host=host.docker.internal client_port={{XDEBUG_PORT}} start_with_request=yes idekey=vscode
       XDEBUG_LOG: /tmp/xdebug.log
