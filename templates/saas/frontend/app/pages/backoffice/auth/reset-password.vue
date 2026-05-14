@@ -13,7 +13,6 @@ const processing = ref(false)
 const success = ref(false)
 const error = ref('')
 
-// Si el link no trae token/email → enlace inválido
 const invalidLink = computed(() => !token.value || !email.value)
 
 async function handleSubmit() {
@@ -59,10 +58,7 @@ async function handleSubmit() {
       <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs">
         Este enlace de recuperación no es válido o ha expirado.
       </p>
-      <NuxtLink
-        to="/backoffice/forgot-password"
-        class="text-sm text-blue-600 hover:underline dark:text-blue-400"
-      >
+      <NuxtLink to="/backoffice/auth/forgot-password" class="text-sm text-blue-600 hover:underline dark:text-blue-400">
         Solicitar nuevo enlace
       </NuxtLink>
     </div>
