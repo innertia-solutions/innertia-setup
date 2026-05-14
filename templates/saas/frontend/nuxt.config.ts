@@ -14,6 +14,8 @@ export default defineNuxtConfig({
     host: '0.0.0.0'
   },
   runtimeConfig: {
+    // Privado — solo SSR. Apunta directamente al backend sin pasar por el proxy Nitro.
+    apiInternalUrl: process.env.NUXT_API_BASE_URL || 'http://api:80',
     public: {
       appName: '{{PROJECT_NAME}}',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
