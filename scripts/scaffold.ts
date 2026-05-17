@@ -42,9 +42,7 @@ export async function scaffoldProject(
   targetDir: string,
   vars: Vars
 ): Promise<void> {
-  await fse.copy(templateDir, targetDir, {
-    filter: (src) => path.basename(src) !== '.npmignore',
-  })
+  await fse.copy(templateDir, targetDir)
 
   const files = await glob('**/*', {
     cwd: targetDir,
@@ -52,6 +50,11 @@ export async function scaffoldProject(
     onlyFiles: true,
     ignore: ['.git/**'],
   })
+
+  // Remove .npmignore files — they exist in the template only to keep empty
+  // directories tracked in the npm package. In the generated project they are junk.
+  const npmIgnores = files.filter(f => path.basename(f) === '.npmignore')
+  await Promise.all(npmIgnores.map(f => fs.unlink(path.join(targetDir, f))))
 
   for (const file of files) {
     const filePath = path.join(targetDir, file)
