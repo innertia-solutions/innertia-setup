@@ -143,7 +143,7 @@ function groupSelectedCount(group) {
     </div>
 
     <!-- Tree -->
-    <div class="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden text-[13px]">
+    <div class="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden text-sm">
 
       <div v-if="visibleApps.length === 0" class="px-3 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
         {{ search ? 'Sin resultados.' : readonly ? 'Sin permisos asignados.' : 'Sin permisos disponibles.' }}
