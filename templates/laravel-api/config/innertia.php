@@ -7,102 +7,70 @@ return [
     | Application Mode
     |--------------------------------------------------------------------------
     |
-    | 'app'  — single-tenant. Settings are global (tenant_id = null).
-    | 'saas' — multi-tenant. Settings resolve per active tenant with fallback
-    |          to platform level. Tenancy is configured automatically.
+    | 'app'  — single-tenant. Auth via JWT. Settings globales.
+    | 'saas' — multi-tenant. Auth via JWT. Settings por tenant.
+    | 'api'  — producto API interno. Auth via API keys. Sin usuarios/tenants.
     |
     */
 
-    'mode' => 'app',
+    'mode' => 'api',
 
     /*
     |--------------------------------------------------------------------------
-    | SaaS / Tenancy Settings
+    | API Product Mode
     |--------------------------------------------------------------------------
     |
-    | Only relevant when mode = 'saas'. Uncomment and configure if switching.
+    | key_prefix  — Prefijo de las API keys generadas (e.g. 'cog_', 'bil_').
+    |               Define uno único por producto para distinguir keys entre servicios.
+    | key_header  — Header HTTP usado para pasar la API key.
+    |
+    | available_permissions — Permisos que pueden asignarse a las API keys.
+    |   Apunta a tu enum \App\Enums\ApiPermissions::class (recomendado)
+    |   o define un array plano: ['perm.name' => 'Descripción'].
+    |
+    |   El enum es type-safe, se puede autocompletar en el IDE y lleva la
+    |   descripción inline. Olimpo lo lee via GET /olimpo/api-keys/permissions.
+    |
+    | Proteger rutas:
+    |   Route::middleware('apikey')->group(...)
+    |   Route::middleware('apikey:permission.name')->get(...)
     |
     */
 
-    // 'saas' => [
-    //     'tenant_model' => \Innertia\Saas\Models\Tenant::class,
-    //     'db_strategy'  => 'single',   // 'single' | 'multi'
-    //     // 'db_prefix'  => '{{PROJECT_NAME}}_',  // only for db_strategy = 'multi'
-    //     'central_domains' => ['localhost', '127.0.0.1'],
-    // ],
+    'api' => [
+        'key_prefix'  => env('API_KEY_PREFIX', 'api_'),
+        'key_header'  => 'X-Api-Key',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Auth Defaults
-    |--------------------------------------------------------------------------
-    |
-    | These are fallback values only. At runtime the auth layer reads from
-    | the Settings system (database) so values can be changed without a
-    | deployment. Set live values via Settings::set():
-    |
-    |   Settings::set('auth.otp.enabled', true);
-    |   Settings::set('auth.email_verification.enabled', true);
-    |   Settings::set('auth.sessions.restrict_concurrent', true);
-    |
-    */
-
-    /*
-    |--------------------------------------------------------------------------
-    | Permissions
-    |--------------------------------------------------------------------------
-    |
-    | Define your application permissions grouped by category. Run:
-    |   php artisan innertia:permissions          — create missing permissions
-    |   php artisan innertia:permissions --prune  — also delete removed ones
-    |
-    */
-
-    'permissions' => [
-        [
-            'category'       => 'users',
-            'category_alias' => 'Usuarios',
-            'permissions'    => [
-                'users.view'           => 'Ver lista de usuarios y detalles',
-                'users.manage'         => 'Crear, editar y eliminar usuarios',
-                'users.assign_roles'   => 'Asignar roles a usuarios',
-                'users.reset_password' => 'Restablecer contraseñas de usuarios',
-            ],
-        ],
-        [
-            'category'       => 'roles',
-            'category_alias' => 'Roles',
-            'permissions'    => [
-                'roles.view'   => 'Ver roles y sus permisos',
-                'roles.manage' => 'Crear, editar y eliminar roles',
-            ],
-        ],
-        [
-            'category'       => 'permissions',
-            'category_alias' => 'Permisos',
-            'permissions'    => [
-                'permissions.view' => 'Ver permisos disponibles del sistema',
-                'permissions.sync' => 'Sincronizar permisos con el sistema',
-            ],
-        ],
+        'available_permissions' => \App\Enums\ApiPermissions::class,
     ],
 
-    'auth' => [
-        'email_verification' => [
-            'enabled' => false,
-            'ttl'     => 60,    // minutes
-        ],
+    /*
+    |--------------------------------------------------------------------------
+    | Cache
+    |--------------------------------------------------------------------------
+    */
 
-        'otp' => [
-            'enabled' => false,
-            'ttl'     => 10,    // minutes
-        ],
+    'cache' => [
+        'ttl' => 60, // minutos — null para no expirar
+    ],
 
-        '2fa' => [
-            'enabled' => false,
-        ],
+    /*
+    |--------------------------------------------------------------------------
+    | Backoffice (Olimpo)
+    |--------------------------------------------------------------------------
+    |
+    | Rutas internas de administración expuestas bajo /olimpo.
+    | Protegidas por olimpo.auth middleware.
+    |
+    */
 
-        'sessions' => [
-            'restrict_concurrent' => false,
+    'backoffice' => [
+        'prefix'     => env('BACKOFFICE_PREFIX', 'backoffice'),
+        'middleware' => [],
+        'enabled'    => true,
+
+        'users' => [
+            'allow_delete' => false,
         ],
     ],
 

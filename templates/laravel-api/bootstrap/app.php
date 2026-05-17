@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'apikey' => \Innertia\Api\Middleware\VerifyClientApiKey::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         InnertiaExceptionHandler::register($exceptions);

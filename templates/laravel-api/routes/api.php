@@ -1,25 +1,19 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
-| Auth routes (innertia-solutions/laravel-innertia)
+| API Routes — modo api (innertia-solutions/laravel-innertia)
 |--------------------------------------------------------------------------
 |
-| POST /auth/login
-| POST /auth/otp/send  |  POST /auth/otp/verify
-| POST /auth/2fa/verify
-| POST /auth/email/verify/send  |  GET /auth/email/verify
-| POST /auth/password/change    |  POST /auth/password/set
-| GET  /auth/me  |  POST /auth/refresh  |  POST /auth/logout  (protected)
-| POST /auth/2fa/enable  |  POST /auth/2fa/disable            (protected)
+| Autenticación: X-Api-Key header, no JWT.
+|
+| Rutas públicas (sin apikey):  routes/api.public.php
+| Rutas privadas (con apikey):  routes/api.private.php
+|
+| Publicar stubs:
+|   php artisan vendor:publish --tag=innertia-routes
 |
 */
-require base_path('vendor/innertia-solutions/laravel-innertia/src/Auth/routes.php');
 
-/*
-|--------------------------------------------------------------------------
-| Application routes
-|--------------------------------------------------------------------------
-*/
+require base_path('routes/api.public.php');
+require base_path('routes/api.private.php');

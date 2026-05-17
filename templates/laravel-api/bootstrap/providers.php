@@ -1,11 +1,10 @@
 <?php
 
 use App\Providers\AppServiceProvider;
-use Innertia\InnertiaAppProvider;
+use Innertia\InnertiaApiProvider;
 
 return [
-    // InnertiaAppProvider must be first — it configures JWT and auth
-    // before other providers read those configs.
-    InnertiaAppProvider::class,
+    // InnertiaApiProvider configura el modo 'api': clients, API keys, middleware apikey.
+    InnertiaApiProvider::class,
     AppServiceProvider::class,
 ];

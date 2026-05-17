@@ -4,8 +4,8 @@
 - Laravel 13, PHP 8.3
 - PostgreSQL 16, Redis 7
 - Docker + Xdebug
-- `innertia-solutions/laravel-innertia` — Auth (JWT), DataTable, ActivityLogger, EntityHistory, UseCase, DomainEvent, Webhooks, Settings
-- `tymon/jwt-auth` — autenticación JWT
+- `innertia-solutions/laravel-innertia` — modo `api`: clients, API keys, middleware apikey, Olimpo
+- Autenticación: X-Api-Key (sin JWT, sin usuarios)
 
 ## Commands
 - `docker compose up` — inicia todos los servicios
@@ -19,36 +19,31 @@
 - DB: localhost:{{DB_PORT}}
 - Redis: localhost:{{REDIS_PORT}}
 
-## Architecture — DDD personalizado
+## Architecture — DDD
 
 ```
 app/
-├── Domains/          # Entidades de negocio. Un subdirectorio por dominio.
+├── Domains/              # Lógica de negocio. Un subdirectorio por dominio.
 │   └── {Domain}/
 │       ├── Models/       # Eloquent models
-│       ├── UseCases/     # Lógica de negocio (extienden \Innertia\Platform\Contracts\UseCase)
-│       ├── Services/     # Lógica auxiliar reutilizable
-│       ├── Events/       # DomainEvents (extienden \Innertia\Platform\Events\DomainEvent)
-│       ├── Listeners/    # Escuchan eventos
-│       ├── Gates/        # Autorizaciones (extienden \Innertia\Platform\Contracts\DomainGate)
-│       ├── Enums/        # Enumeraciones PHP 8.1+
-│       ├── Mails/        # Mailables (extienden \Innertia\Mail\InnertiaMailable)
+│       ├── UseCases/     # Lógica de negocio (extienden UseCase)
+│       ├── Services/     # Servicios auxiliares reutilizables
+│       ├── Events/       # DomainEvents
+│       ├── Listeners/    # Escuchan eventos de dominio
 │       └── Observers/    # Eloquent observers
 │
-└── Apps/             # Capa HTTP. Un subdirectorio por app/módulo.
-    └── {AppName}/
-        └── {Domain}/
-            └── Controllers/   # Controladores REST (delegan a UseCases)
+└── Api/                  # Capa HTTP. Organizada por grupo de endpoints.
+    └── {Group}/
+        └── {Resource}Controller.php
 ```
 
 ### Reglas
 
 - Controllers solo validan input y delegan a UseCases. Sin lógica de negocio.
-- UseCases extienden `\Innertia\Platform\Contracts\UseCase`, reciben parámetros en constructor y devuelven resultado desde `execute()`.
-- Models viven en `app/Domains/{D}/Models/`. Nunca en `app/Models/`.
-- Rutas API en `routes/api.php` agrupadas por módulo.
-- Usar `Auditable` y `HasHistory` (de laravel-innertia) en modelos que requieren trazabilidad.
-- IDs son UUID — los modelos que extiendan `\Innertia\Models\User` ya lo incluyen. Para otros modelos, usar el trait `\Innertia\Traits\HasUuid`.
+- UseCases extienden `\Innertia\Platform\Contracts\UseCase`, reciben parámetros en constructor, devuelven resultado desde `execute()`.
+- Models viven en `app/Domains/{Domain}/Models/`. Nunca en `app/Models/`.
+- El client autenticado se obtiene del request: `$request->attributes->get('client')`.
+- IDs son UUID. Usar el trait `\Innertia\Platform\Traits\HasUuid`.
 
 ### Ejemplo de UseCase
 
@@ -57,38 +52,41 @@ app/
 namespace App\Domains\Orders\UseCases;
 
 use App\Domains\Orders\Models\Order;
+use Innertia\Api\Models\Client;
 use Innertia\Platform\Contracts\UseCase;
 
 class CreateOrder extends UseCase
 {
     public function __construct(
-        public readonly string $customerId,
+        public readonly Client $client,
+        public readonly string $description,
         public readonly float  $total,
     ) {}
 
     public function execute(): Order
     {
         return Order::create([
-            'customer_id' => $this->customerId,
+            'client_id'   => $this->client->id,
+            'description' => $this->description,
             'total'       => $this->total,
         ]);
     }
 }
 
 // Uso sincrónico:
-$order = (new CreateOrder(customerId: '...', total: 99.9))->execute();
+$order = (new CreateOrder(client: $client, description: '...', total: 99.9))->execute();
 
 // Uso asincrónico (cola):
-(new CreateOrder(customerId: '...', total: 99.9))->onQueue();
-(new CreateOrder(customerId: '...', total: 99.9))->onQueue('critical');
-(new CreateOrder(customerId: '...', total: 99.9))->delay(now()->addMinutes(5));
+(new CreateOrder(...))->onQueue();
+(new CreateOrder(...))->onQueue('critical');
+(new CreateOrder(...))->delay(now()->addMinutes(5));
 ```
 
 ### Ejemplo de Controller
 
 ```php
-// app/Apps/BackOffice/Orders/Controllers/OrdersController.php
-namespace App\Apps\BackOffice\Orders\Controllers;
+// app/Api/Orders/OrdersController.php
+namespace App\Api\Orders;
 
 use App\Domains\Orders\UseCases\CreateOrder;
 use Illuminate\Http\JsonResponse;
@@ -98,14 +96,16 @@ class OrdersController
 {
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'customer_id' => 'required|string',
+        $data   = $request->validate([
+            'description' => 'required|string',
             'total'       => 'required|numeric|min:0',
         ]);
+        $client = $request->attributes->get('client');
 
         $order = (new CreateOrder(
-            customerId: $data['customer_id'],
-            total:      $data['total'],
+            client:      $client,
+            description: $data['description'],
+            total:       $data['total'],
         ))->execute();
 
         return response()->json($order, 201);
