@@ -84,6 +84,15 @@ const selectedPerms = computed(() =>
   form.permissions.map(name => allPermsMap.value[name] ?? { name, description: null })
 )
 
+const permSearch = ref('')
+const filteredSelectedPerms = computed(() => {
+  const q = permSearch.value.trim().toLowerCase()
+  if (!q) return selectedPerms.value
+  return selectedPerms.value.filter(p =>
+    p.name.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q)
+  )
+})
+
 onMounted(() => {
   fetchRole()
   fetchPermissions()
@@ -132,19 +141,35 @@ onMounted(() => {
               Sin permisos seleccionados.
             </div>
 
-            <ul v-else class="space-y-1 max-h-96 overflow-y-auto pr-1">
-              <li
-                v-for="p in selectedPerms"
-                :key="p.name"
-                class="flex items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 group"
-              >
-                <span class="mt-0.5 size-1.5 rounded-full bg-blue-500 shrink-0" />
-                <div class="min-w-0">
-                  <p class="text-xs font-mono text-slate-700 dark:text-slate-300 truncate">{{ p.name }}</p>
-                  <p v-if="p.description" class="text-xs text-slate-400 dark:text-slate-500 truncate">{{ p.description }}</p>
+            <template v-else>
+              <div class="relative">
+                <svg class="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input
+                  v-model="permSearch"
+                  type="search"
+                  placeholder="Filtrar…"
+                  class="w-full pl-6 pr-2 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/30 focus:border-blue-400"
+                />
+              </div>
+
+              <div v-if="filteredSelectedPerms.length === 0" class="py-3 text-center text-xs text-slate-400">
+                Sin resultados.
+              </div>
+
+              <div v-else class="max-h-72 overflow-y-auto -mx-1">
+                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 px-1">
+                  <div
+                    v-for="p in filteredSelectedPerms"
+                    :key="p.name"
+                    class="flex items-center gap-1.5 rounded px-1.5 py-1 hover:bg-slate-50 dark:hover:bg-slate-800/40 min-w-0"
+                    :title="p.description ?? p.name"
+                  >
+                    <span class="size-1.5 rounded-full bg-blue-500 shrink-0" />
+                    <span class="text-xs font-mono text-slate-700 dark:text-slate-300 truncate">{{ p.name }}</span>
+                  </div>
                 </div>
-              </li>
-            </ul>
+              </div>
+            </template>
           </div>
 
           <div class="flex justify-end">
