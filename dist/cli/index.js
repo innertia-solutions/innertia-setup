@@ -107,15 +107,15 @@ function generateEnvContent(exampleContent) {
   return exampleContent;
 }
 async function scaffoldProject(templateDir, targetDir, vars) {
-  await fse.copy(templateDir, targetDir, {
-    filter: (src) => path.basename(src) !== ".npmignore"
-  });
+  await fse.copy(templateDir, targetDir);
   const files = await glob("**/*", {
     cwd: targetDir,
     dot: true,
     onlyFiles: true,
     ignore: [".git/**"]
   });
+  const npmIgnores = files.filter((f) => path.basename(f) === ".npmignore");
+  await Promise.all(npmIgnores.map((f) => fs.unlink(path.join(targetDir, f))));
   for (const file of files) {
     const filePath = path.join(targetDir, file);
     if (isBinary(filePath)) continue;

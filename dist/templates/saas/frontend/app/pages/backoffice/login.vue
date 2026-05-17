@@ -92,6 +92,7 @@ async function handleSubmit() {
           />
           <button
             type="button"
+            tabindex="-1"
             data-hs-toggle-password='{"target": "#password"}'
             class="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-slate-400 rounded-e-md focus:outline-hidden focus:text-blue-800 dark:text-slate-600 dark:focus:text-blue-500"
           >

@@ -2,40 +2,38 @@
 
 namespace Database\Seeders;
 
-use App\Domains\Users\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use Innertia\Facades\Innertia;
 use Innertia\Facades\Permissions;
-use Innertia\Auth\RBAC\Models\Role;
+use Innertia\Saas\UseCases\CreateTenant;
+use Innertia\Saas\UseCases\CreateTenantAdmin;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Sync permissions defined in config/innertia.php
+        $tenantKey  = env('SEED_TENANT_KEY', 'dev');
+        $tenantName = env('SEED_TENANT_NAME', 'Dev Tenant');
+        $email      = env('SEED_ADMIN_EMAIL', "admin@{$tenantKey}.com");
+        $password   = env('SEED_ADMIN_PASSWORD', 'Admin1234!');
+
+        // 1. Sync permissions
         Permissions::sync();
 
-        // 2. Create super-admin role (bypasses all gates via Gate::before in InnertiaServiceProvider)
-        $role = Role::firstOrCreate(['name' => 'super-admin']);
-
-        // 3. Create admin user
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@admin.com'],
-            [
-                'name'     => 'Admin',
-                'password' => Hash::make('Admin1234!'),
-            ]
-        );
-
-        $admin->assignRole($role);
-
-        // 4. Grant app access (requiere tenant activo — correr con tenant activado)
-        if (\Innertia\Facades\Innertia::tenant()) {
-            foreach (array_keys(config('innertia.apps', [])) as $app) {
-                if (! $admin->hasApp($app)) {
-                    $admin->grantApp($app);
-                }
-            }
+        // 2. Create tenant (skip if already exists)
+        try {
+            (new CreateTenant($tenantKey, $tenantName, 'active'))->execute();
+        } catch (\Innertia\Exceptions\ConflictException) {
+            // already exists — continue
         }
+
+        // 3. Activate tenant and create admin user
+        Innertia::activate($tenantKey);
+
+        (new CreateTenantAdmin(email: $email, password: $password))->execute();
+
+        Innertia::deactivate();
+
+        $this->command->info("Tenant: {$tenantKey} | Admin: {$email} | Password: {$password}");
     }
 }
