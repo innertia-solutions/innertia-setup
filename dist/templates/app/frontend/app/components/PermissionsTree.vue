@@ -2,10 +2,20 @@
 import { IconSearch, IconFolder, IconFolderOpen, IconKey } from '@tabler/icons-vue'
 
 const props = defineProps({
-  groups:     { type: Array, default: () => [] },
-  modelValue: { type: Array, default: () => [] },
-  readonly:   { type: Boolean, default: false },
+  groups:       { type: Array, default: () => [] },
+  modelValue:   { type: Array, default: () => [] },
+  readonly:     { type: Boolean, default: false },
+  folderColor:  { type: String, default: 'gray' },
 })
+
+const folderColorClass = computed(() => ({
+  gray:   'text-slate-400 dark:text-slate-500',
+  blue:   'text-blue-400 dark:text-blue-500',
+  amber:  'text-amber-400 dark:text-amber-500',
+  green:  'text-green-400 dark:text-green-500',
+  purple: 'text-purple-400 dark:text-purple-500',
+  rose:   'text-rose-400 dark:text-rose-500',
+}[props.folderColor] ?? 'text-slate-400 dark:text-slate-500'))
 
 const emit = defineEmits(['update:modelValue'])
 
@@ -87,7 +97,7 @@ function setIndeterminate(el, state) {
     </div>
 
     <!-- Tree -->
-    <div class="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden text-xs">
+    <div class="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden text-[13px]">
 
       <!-- Empty -->
       <div v-if="visibleGroups.length === 0" class="px-3 py-6 text-center text-slate-400 dark:text-slate-500">
@@ -114,8 +124,8 @@ function setIndeterminate(el, state) {
           />
 
           <!-- folder icon + label -->
-          <IconFolderOpen v-if="!isCollapsed(group.category)" class="size-3.5 text-amber-400 shrink-0" />
-          <IconFolder     v-else                               class="size-3.5 text-amber-400 shrink-0" />
+          <IconFolderOpen v-if="!isCollapsed(group.category)" class="size-3.5 shrink-0" :class="folderColorClass" />
+          <IconFolder     v-else                               class="size-3.5 shrink-0" :class="folderColorClass" />
 
           <span class="font-semibold text-slate-600 dark:text-slate-300 flex-1 truncate">
             {{ group.category_alias ?? group.category }}
