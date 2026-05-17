@@ -74,8 +74,10 @@ async function handleSave() {
 // All permission objects from groups, keyed by name
 const allPermsMap = computed(() => {
   const map = {}
-  for (const g of permGroups.value) {
-    for (const p of g.permissions ?? []) map[p.name] = p
+  for (const app of permGroups.value) {
+    for (const g of app.groups ?? []) {
+      for (const p of g.permissions ?? []) map[p.name] = p
+    }
   }
   return map
 })
@@ -186,7 +188,7 @@ onMounted(() => {
           <PermissionsTree
             v-else
             v-model="form.permissions"
-            :groups="permGroups"
+            :apps="permGroups"
           />
         </div>
 
