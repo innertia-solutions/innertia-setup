@@ -71,19 +71,26 @@ async function handleSave() {
   }
 }
 
-// All permission objects from groups, keyed by name
 const allPermsMap = computed(() => {
   const map = {}
   for (const app of permGroups.value) {
     for (const g of app.groups ?? []) {
-      for (const p of g.permissions ?? []) map[p.name] = p
+      for (const p of g.permissions ?? []) {
+        map[p.name] = {
+          ...p,
+          app:            app.app,
+          app_label:      app.app_label,
+          category:       g.category,
+          category_alias: g.category_alias,
+        }
+      }
     }
   }
   return map
 })
 
 const selectedPerms = computed(() =>
-  form.permissions.map(name => allPermsMap.value[name] ?? { name, description: null })
+  form.permissions.map(name => allPermsMap.value[name] ?? { name, description: null, app: null, app_label: null, category: null, category_alias: null })
 )
 
 const permSearch = ref('')
@@ -91,7 +98,10 @@ const filteredSelectedPerms = computed(() => {
   const q = permSearch.value.trim().toLowerCase()
   if (!q) return selectedPerms.value
   return selectedPerms.value.filter(p =>
-    p.name.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q)
+    p.name.toLowerCase().includes(q) ||
+    (p.description ?? '').toLowerCase().includes(q) ||
+    (p.app_label ?? '').toLowerCase().includes(q) ||
+    (p.category_alias ?? '').toLowerCase().includes(q)
   )
 })
 
@@ -158,18 +168,29 @@ onMounted(() => {
                 Sin resultados.
               </div>
 
-              <div v-else class="max-h-72 overflow-y-auto -mx-1">
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 px-1">
-                  <div
-                    v-for="p in filteredSelectedPerms"
-                    :key="p.name"
-                    class="flex items-center gap-1.5 rounded px-1.5 py-1 hover:bg-slate-50 dark:hover:bg-slate-800/40 min-w-0"
-                    :title="p.description ?? p.name"
-                  >
-                    <span class="size-1.5 rounded-full bg-blue-500 shrink-0" />
-                    <span class="text-xs font-mono text-slate-700 dark:text-slate-300 truncate">{{ p.name }}</span>
-                  </div>
-                </div>
+              <div v-else class="max-h-72 overflow-y-auto -mx-3">
+                <table class="w-full text-xs border-collapse">
+                  <thead class="sticky top-0 z-10">
+                    <tr class="bg-slate-50 dark:bg-slate-800 text-left">
+                      <th class="px-3 py-1.5 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-[10px] border-b border-slate-200 dark:border-slate-700">App</th>
+                      <th class="px-3 py-1.5 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-[10px] border-b border-slate-200 dark:border-slate-700">Grupo</th>
+                      <th class="px-3 py-1.5 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-[10px] border-b border-slate-200 dark:border-slate-700">Permiso</th>
+                      <th class="px-3 py-1.5 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-[10px] border-b border-slate-200 dark:border-slate-700">Descripción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="p in filteredSelectedPerms"
+                      :key="p.name"
+                      class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td class="px-3 py-1.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ p.app_label ?? p.app ?? '—' }}</td>
+                      <td class="px-3 py-1.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ p.category_alias ?? p.category ?? '—' }}</td>
+                      <td class="px-3 py-1.5 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ p.name }}</td>
+                      <td class="px-3 py-1.5 text-slate-400 dark:text-slate-500 truncate max-w-[180px]">{{ p.description ?? '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </template>
           </div>
