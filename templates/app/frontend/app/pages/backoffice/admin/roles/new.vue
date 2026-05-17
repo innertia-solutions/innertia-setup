@@ -4,6 +4,7 @@ definePageMeta({ layout: 'backoffice', middleware: ['auth'] })
 const api   = useApi()
 const toast = useToast()
 
+const router             = useRouter()
 const loading            = ref(false)
 const loadingPermissions = ref(false)
 const permGroups         = ref([])
@@ -45,7 +46,7 @@ async function handleSubmit() {
       await api.post(`backoffice/roles/${roleId}/permissions`, { permissions: form.permissions })
     }
     toast.success('Rol creado correctamente.')
-    invalidateRoles().catch(() => {})
+    await invalidateRoles()
     ok = true
   } catch (e) {
     const errs = e?.data?.errors ?? {}
@@ -54,7 +55,7 @@ async function handleSubmit() {
   } finally {
     loading.value = false
   }
-  if (ok) navigateTo('/backoffice/admin/roles')
+  if (ok) router.push('/backoffice/admin/roles')
 }
 
 // All permission objects from groups, keyed by name

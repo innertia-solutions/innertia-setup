@@ -61,7 +61,7 @@ async function handleSave() {
     await api.put(`backoffice/roles/${id.value}`, { name: form.name, description: form.description || undefined })
     await api.post(`backoffice/roles/${id.value}/permissions`, { permissions: form.permissions })
     toast.success('Rol actualizado correctamente.')
-    invalidateRoles().catch(() => {})
+    await invalidateRoles()
   } catch (e) {
     const errs = e?.data?.errors ?? {}
     Object.keys(errs).forEach(k => { if (k in errors) errors[k] = errs[k][0] ?? '' })
