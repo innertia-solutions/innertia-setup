@@ -4,12 +4,24 @@ definePageMeta({ layout: 'auth', middleware: ['guest'] })
 const { performLogin } = useAuth()
 const config = useRuntimeConfig()
 
+const isDemo = config.public.appEnv !== 'production'
+
+const demoAccounts = [
+  { label: 'Admin',      email: 'admin@admin.com', password: 'Admin1234!' },
+  { label: 'Demo User',  email: 'demo@demo.com',   password: 'Demo1234!' },
+]
+
 const form = useForm({
   email:    { value: '', rules: ['required', 'email'] },
   password: { value: '', rules: ['required', { name: 'min', arg: 8 }] },
 })
 
 const processing = ref(false)
+
+function fillDemo(account) {
+  form.values.email    = account.email
+  form.values.password = account.password
+}
 
 async function handleSubmit() {
   if (!form.validate()) return
@@ -18,7 +30,7 @@ async function handleSubmit() {
   try {
     const data = await performLogin('backoffice', form.values.email, form.values.password)
     if (data?.requires_password_change) {
-      await navigateTo('/backoffice/change-password')
+      await navigateTo('/backoffice/auth/change-password')
     } else {
       await navigateTo(config.public.homePath || '/backoffice')
     }
@@ -39,6 +51,22 @@ async function handleSubmit() {
       <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">
         Ingresa tus credenciales para continuar.
       </p>
+    </div>
+
+    <!-- Demo accounts -->
+    <div v-if="isDemo" class="p-3 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
+      <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-2">Cuentas de demo</p>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="account in demoAccounts"
+          :key="account.email"
+          type="button"
+          @click="fillDemo(account)"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+        >
+          {{ account.label }}
+        </button>
+      </div>
     </div>
 
     <form class="space-y-4" @submit.prevent="handleSubmit" novalidate>
@@ -70,7 +98,7 @@ async function handleSubmit() {
             Contraseña
           </label>
           <NuxtLink
-            to="/forgot-password"
+            to="/backoffice/auth/forgot-password"
             class="text-xs text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:underline"
           >
             Recuperar contraseña
@@ -92,6 +120,7 @@ async function handleSubmit() {
           />
           <button
             type="button"
+            tabindex="-1"
             data-hs-toggle-password='{"target": "#password"}'
             class="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-slate-400 rounded-e-md focus:outline-hidden focus:text-blue-800 dark:text-slate-600 dark:focus:text-blue-500"
           >
@@ -129,7 +158,7 @@ async function handleSubmit() {
     <div class="pt-6 border-t border-slate-200 dark:border-slate-700">
       <ul class="flex flex-wrap justify-center items-center gap-3">
         <li class="inline-flex items-center relative text-xs text-slate-500 pe-3.5 last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-0 after:inline-block after:size-[3px] after:bg-slate-400 after:rounded-full after:-translate-y-1/2 dark:text-slate-400">
-          © {{ new Date().getFullYear() }} pomely.
+          © {{ new Date().getFullYear() }} {{PROJECT_NAME}}.
         </li>
         <li class="inline-flex items-center relative text-xs text-slate-500 pe-3.5 last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-0 after:inline-block after:size-[3px] after:bg-slate-400 after:rounded-full after:-translate-y-1/2 dark:text-slate-400">
           <NuxtLink to="/terms" class="text-xs text-slate-500 underline-offset-4 hover:underline hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">

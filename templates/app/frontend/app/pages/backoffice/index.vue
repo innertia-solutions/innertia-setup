@@ -1,87 +1,154 @@
 <script setup>
+import {
+  IconUsers, IconShieldCheck, IconDeviceDesktop, IconKey,
+  IconTrendingUp, IconTrendingDown,
+  IconCircleCheck, IconEdit, IconTrash, IconUpload,
+  IconArrowRight,
+} from '@tabler/icons-vue'
+
 definePageMeta({ layout: 'backoffice', middleware: ['auth'] })
 
 const authStore = useAuthStore()
 
-const stats = [
-  { label: 'Usuarios',         value: '—', icon: 'i-lucide-users',          bg: 'bg-blue-50 dark:bg-blue-900/20',   text: 'text-blue-600 dark:text-blue-400' },
-  { label: 'Roles',            value: '—', icon: 'i-lucide-shield',          bg: 'bg-violet-50 dark:bg-violet-900/20', text: 'text-violet-600 dark:text-violet-400' },
-  { label: 'Permisos',         value: '—', icon: 'i-lucide-key',             bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-600 dark:text-amber-400' },
-  { label: 'Sesiones activas', value: '—', icon: 'i-lucide-monitor',         bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-600 dark:text-green-400' },
-]
-
 const hour = new Date().getHours()
 const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
-const userName = computed(() => authStore.user?.name ?? 'Usuario')
+const userName = computed(() => authStore.user?.name?.split(' ')[0] ?? 'Usuario')
+
+const stats = [
+  {
+    label: 'Usuarios',
+    value: '—',
+    trend: '+0%',
+    trendUp: true,
+    sub: 'usuarios registrados',
+    icon: IconUsers,
+    iconBg: 'bg-blue-50 dark:bg-blue-500/10',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+  },
+  {
+    label: 'Roles',
+    value: '—',
+    trend: '+0',
+    trendUp: true,
+    sub: 'roles configurados',
+    icon: IconShieldCheck,
+    iconBg: 'bg-violet-50 dark:bg-violet-500/10',
+    iconColor: 'text-violet-600 dark:text-violet-400',
+  },
+  {
+    label: 'Permisos',
+    value: '—',
+    trend: '+0',
+    trendUp: true,
+    sub: 'permisos definidos',
+    icon: IconKey,
+    iconBg: 'bg-amber-50 dark:bg-amber-500/10',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+  },
+  {
+    label: 'Sesiones activas',
+    value: '—',
+    trend: '+0',
+    trendUp: true,
+    sub: 'usuarios conectados',
+    icon: IconDeviceDesktop,
+    iconBg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+  },
+]
 </script>
 
 <template>
-  <div>
-    <AdminPageHeader :title="`${greeting}, ${userName}`" description="Resumen general del sistema." />
+  <div class="p-2 sm:p-5 sm:py-0 md:pt-5 space-y-5">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-      <div
-        v-for="stat in stats"
-        :key="stat.label"
-        class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 flex items-center gap-4"
-      >
-        <div class="size-12 rounded-lg flex items-center justify-center shrink-0" :class="stat.bg">
-          <Icon :name="stat.icon" class="size-5" :class="stat.text" />
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ stat.value }}</p>
-          <p class="text-sm text-slate-500 dark:text-slate-400">{{ stat.label }}</p>
-        </div>
+    <!-- Page Header -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold text-foreground">{{ greeting }}, {{ userName }}</h1>
+        <p class="mt-1 text-sm text-muted-foreground-1">Resumen general del sistema.</p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div v-for="stat in stats" :key="stat.label" class="bg-card border border-card-line shadow-2xs rounded-xl p-5">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div class="flex-none size-10 rounded-lg flex items-center justify-center" :class="stat.iconBg">
+            <component :is="stat.icon" :size="20" :class="stat.iconColor" />
+          </div>
+          <span class="inline-flex items-center gap-x-1 py-1 px-2 rounded-full text-xs font-semibold"
+            :class="stat.trendUp ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'"
+          >
+            <IconTrendingUp v-if="stat.trendUp" :size="12" />
+            <IconTrendingDown v-else :size="12" />
+            {{ stat.trend }}
+          </span>
+        </div>
+        <p class="text-3xl font-bold text-foreground">{{ stat.value }}</p>
+        <p class="mt-1 text-sm font-medium text-muted-foreground-1">{{ stat.label }}</p>
+        <p class="mt-1 text-xs text-muted-foreground-2">{{ stat.sub }}</p>
+      </div>
+    </div>
+
+    <!-- Quick access + System status -->
+    <div class="grid xl:grid-cols-2 gap-5 pb-10">
+
       <!-- Quick access -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Acceso rápido</h2>
-        <div class="space-y-2">
+      <div class="bg-card border border-card-line shadow-2xs rounded-xl">
+        <div class="px-5 py-4 border-b border-card-line">
+          <h2 class="text-base font-semibold text-foreground">Acceso rápido</h2>
+          <p class="text-sm text-muted-foreground-1">Acciones frecuentes del sistema</p>
+        </div>
+        <div class="p-5 space-y-2">
           <NuxtLink
             to="/backoffice/admin/users/new"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface hover:bg-muted-hover transition-colors"
           >
-            <Icon name="i-lucide-user-plus" class="size-4 text-blue-600 dark:text-blue-400" />
-            <span class="text-sm text-slate-700 dark:text-slate-300">Crear nuevo usuario</span>
+            <IconUsers class="size-4 text-blue-500" :stroke="1.5" />
+            <span class="text-sm text-foreground">Crear nuevo usuario</span>
+            <IconArrowRight class="size-4 text-muted-foreground ms-auto" :stroke="1.5" />
           </NuxtLink>
           <NuxtLink
             to="/backoffice/admin/roles/new"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface hover:bg-muted-hover transition-colors"
           >
-            <Icon name="i-lucide-shield-plus" class="size-4 text-violet-600 dark:text-violet-400" />
-            <span class="text-sm text-slate-700 dark:text-slate-300">Crear nuevo rol</span>
+            <IconShieldCheck class="size-4 text-violet-500" :stroke="1.5" />
+            <span class="text-sm text-foreground">Crear nuevo rol</span>
+            <IconArrowRight class="size-4 text-muted-foreground ms-auto" :stroke="1.5" />
           </NuxtLink>
           <NuxtLink
             to="/backoffice/admin/sessions"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface hover:bg-muted-hover transition-colors"
           >
-            <Icon name="i-lucide-monitor" class="size-4 text-green-600 dark:text-green-400" />
-            <span class="text-sm text-slate-700 dark:text-slate-300">Ver sesiones activas</span>
+            <IconDeviceDesktop class="size-4 text-emerald-500" :stroke="1.5" />
+            <span class="text-sm text-foreground">Ver sesiones activas</span>
+            <IconArrowRight class="size-4 text-muted-foreground ms-auto" :stroke="1.5" />
           </NuxtLink>
         </div>
       </div>
 
-      <!-- System info -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Estado del sistema</h2>
-        <div class="space-y-3">
+      <!-- System status -->
+      <div class="bg-card border border-card-line shadow-2xs rounded-xl">
+        <div class="px-5 py-4 border-b border-card-line">
+          <h2 class="text-base font-semibold text-foreground">Estado del sistema</h2>
+          <p class="text-sm text-muted-foreground-1">Estado actual de los servicios</p>
+        </div>
+        <div class="p-5 space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500 dark:text-slate-400">API</span>
-            <AppTag text="Operativo" severity="success" size="xs" />
+            <span class="text-sm text-muted-foreground">API</span>
+            <App.Tag text="Operativo" severity="success" size="xs" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500 dark:text-slate-400">Base de datos</span>
-            <AppTag text="Operativo" severity="success" size="xs" />
+            <span class="text-sm text-muted-foreground">Base de datos</span>
+            <App.Tag text="Operativo" severity="success" size="xs" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500 dark:text-slate-400">Autenticación</span>
-            <AppTag text="Operativo" severity="success" size="xs" />
+            <span class="text-sm text-muted-foreground">Autenticación</span>
+            <App.Tag text="Operativo" severity="success" size="xs" />
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>

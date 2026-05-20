@@ -13,7 +13,6 @@ const processing = ref(false)
 const success = ref(false)
 const error = ref('')
 
-// Si el link no trae token/email → enlace inválido
 const invalidLink = computed(() => !token.value || !email.value)
 
 async function handleSubmit() {
@@ -29,14 +28,14 @@ async function handleSubmit() {
 
   processing.value = true
   try {
-    await api.post('auth/password/reset', {
+    await api.post('backoffice/auth/password/reset', {
       token: token.value,
       email: email.value,
       password: password.value,
       password_confirmation: passwordConfirmation.value,
     })
     success.value = true
-    setTimeout(() => navigateTo('/login'), 2500)
+    setTimeout(() => navigateTo('/backoffice/login'), 2500)
   } catch (e) {
     error.value = e?.data?.message ?? 'El enlace es inválido o ha expirado.'
   } finally {
@@ -59,10 +58,7 @@ async function handleSubmit() {
       <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs">
         Este enlace de recuperación no es válido o ha expirado.
       </p>
-      <NuxtLink
-        to="/forgot-password"
-        class="text-sm text-blue-600 hover:underline dark:text-blue-400"
-      >
+      <NuxtLink to="/backoffice/auth/forgot-password" class="text-sm text-blue-600 hover:underline dark:text-blue-400">
         Solicitar nuevo enlace
       </NuxtLink>
     </div>
@@ -148,7 +144,7 @@ async function handleSubmit() {
 
       <div class="text-center">
         <NuxtLink
-          to="/login"
+          to="/backoffice/login"
           class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:underline"
         >
           ← Volver al inicio de sesión

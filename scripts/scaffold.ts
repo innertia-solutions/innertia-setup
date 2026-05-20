@@ -59,6 +59,7 @@ export async function scaffoldProject(
   for (const file of files) {
     const filePath = path.join(targetDir, file)
     if (isBinary(filePath)) continue
+    if (path.basename(file) === '.npmignore') continue
 
     const content = await fs.readFile(filePath, 'utf-8')
     const substituted = substituteVariables(content, vars)

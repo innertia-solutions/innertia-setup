@@ -15,7 +15,7 @@ async function handleSubmit() {
 
   processing.value = true
   try {
-    await api.post('auth/password/forgot', { email: form.values.email })
+    await api.post('backoffice/auth/password/forgot', { email: form.values.email })
     sent.value = true
   } catch (e) {
     form.addError('email', e?.data?.message ?? 'No pudimos procesar la solicitud.')
@@ -89,7 +89,7 @@ async function handleSubmit() {
 
     <div class="text-center">
       <NuxtLink
-        to="/login"
+        to="/backoffice/login"
         class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:underline"
       >
         ← Volver al inicio de sesión

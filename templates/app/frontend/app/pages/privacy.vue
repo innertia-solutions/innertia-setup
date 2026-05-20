@@ -7,7 +7,7 @@ const config = useRuntimeConfig()
   <div class="min-h-screen bg-white dark:bg-slate-900">
     <div class="max-w-3xl mx-auto px-6 py-16">
       <NuxtLink
-        to="/login"
+        :to="config.public.loginPath"
         class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 mb-10"
       >
         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
