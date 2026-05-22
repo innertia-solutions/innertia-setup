@@ -1,15 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import path from 'path'
 
-// Mock fs antes de importar el módulo
 vi.mock('fs', () => ({
   existsSync: vi.fn(),
-  copyFileSync: vi.fn(),
-}))
-
-// Mock child_process
-vi.mock('child_process', () => ({
-  execSync: vi.fn(),
 }))
 
 import { existsSync } from 'fs'
