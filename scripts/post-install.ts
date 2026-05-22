@@ -2,6 +2,15 @@ import { execSync } from 'child_process'
 import { existsSync, copyFileSync } from 'fs'
 import path from 'path'
 
+export function resolveComposerDir(projectDir: string): string | null {
+  const apiDir     = path.join(projectDir, 'api')
+  const backendDir = path.join(projectDir, 'backend')
+  if (existsSync(path.join(apiDir, 'composer.json')))     return apiDir
+  if (existsSync(path.join(backendDir, 'composer.json'))) return backendDir
+  if (existsSync(path.join(projectDir, 'composer.json'))) return projectDir
+  return null
+}
+
 export function runPostInstall(projectDir: string, onMessage?: (msg: string) => void): void {
   // Git init
   onMessage?.('Initializing git repository...')
@@ -12,13 +21,7 @@ export function runPostInstall(projectDir: string, onMessage?: (msg: string) => 
     { cwd: projectDir, stdio: 'pipe', env: { ...process.env, GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'commit.gpgsign', GIT_CONFIG_VALUE_0: 'false' } }
   )
 
-  // Composer install — detect backend dir or root-level composer.json
-  const backendDir = path.join(projectDir, 'backend')
-  const composerDir = existsSync(path.join(backendDir, 'composer.json'))
-    ? backendDir
-    : existsSync(path.join(projectDir, 'composer.json'))
-      ? projectDir
-      : null
+  const composerDir = resolveComposerDir(projectDir)
 
   if (composerDir) {
     // Copy .env.example → .env before composer install so that
