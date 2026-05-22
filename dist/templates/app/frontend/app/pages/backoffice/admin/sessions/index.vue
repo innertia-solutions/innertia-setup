@@ -1,154 +1,139 @@
 <script setup>
+import { IconUsers, IconShieldCheck, IconDeviceDesktop, IconTrash, IconBan } from '@tabler/icons-vue'
 definePageMeta({ layout: 'backoffice', middleware: ['auth'] })
 
-const api = useApi()
+const api   = useApi()
 const toast = useToast()
+const tableRef = ref(null)
 
-const loading = ref(false)
-const sessions = ref([])
+const adminTabs = [
+  { label: 'Usuarios',  to: '/backoffice/admin/users',    icon: IconUsers         },
+  { label: 'Roles',     to: '/backoffice/admin/roles',    icon: IconShieldCheck   },
+  { label: 'Sesiones',  to: '/backoffice/admin/sessions', icon: IconDeviceDesktop },
+]
 
-const revokeTarget = ref(null)
-const revokeLoading = ref(false)
-const showRevokeAll = ref(false)
-const revokeAllLoading = ref(false)
+const columns = [
+  { key: 'user_name',        label: 'Usuario',       sortable: true },
+  { key: 'ip_address',       label: 'IP' },
+  { key: 'device',           label: 'Dispositivo' },
+  { key: 'last_activity_at', label: 'Último acceso', sortable: true },
+  { key: 'actions',          label: '',              size: 88 },
+]
 
-async function fetchSessions() {
-  loading.value = true
-  try {
-    const data = await api.get('backoffice/sessions')
-    sessions.value = data?.data ?? data ?? []
-  } catch {
-    toast.error('Error al cargar las sesiones.')
-  } finally {
-    loading.value = false
-  }
+// ── Revoke single ─────────────────────────────────────────────────────────────
+const showRevokeModal = ref(false)
+const revokingSession = ref(null)
+const revoking        = ref(false)
+
+const openRevoke = (row) => {
+  revokingSession.value = row
+  showRevokeModal.value = true
 }
 
-async function confirmRevoke() {
-  revokeLoading.value = true
+const confirmRevoke = async () => {
+  if (!revokingSession.value) return
+  revoking.value = true
   try {
-    await api.delete(`backoffice/sessions/${revokeTarget.value.id}`)
+    await api.delete(`backoffice/sessions/${revokingSession.value.id}`)
     toast.success('Sesión revocada.')
-    sessions.value = sessions.value.filter(s => s.id !== revokeTarget.value.id)
-    revokeTarget.value = null
+    showRevokeModal.value = false
+    tableRef.value?.closePreview()
+    tableRef.value?.reload()
   } catch (e) {
     toast.error(e?.data?.message ?? 'Error al revocar la sesión.')
   } finally {
-    revokeLoading.value = false
+    revoking.value = false
   }
 }
 
-async function confirmRevokeAll() {
-  revokeAllLoading.value = true
+// ── Revoke all ────────────────────────────────────────────────────────────────
+const showRevokeAllModal = ref(false)
+const revokingAll        = ref(false)
+
+const confirmRevokeAll = async () => {
+  revokingAll.value = true
   try {
     await api.delete('backoffice/sessions')
     toast.success('Todas las sesiones han sido revocadas.')
-    sessions.value = []
-    showRevokeAll.value = false
+    showRevokeAllModal.value = false
+    tableRef.value?.reload()
   } catch (e) {
     toast.error(e?.data?.message ?? 'Error al revocar las sesiones.')
   } finally {
-    revokeAllLoading.value = false
+    revokingAll.value = false
   }
 }
-
-onMounted(fetchSessions)
 </script>
 
 <template>
-  <div>
-    <AdminPageHeader title="Sesiones activas" description="Sesiones de usuario actualmente activas en el sistema.">
-      <template #actions>
-        <AppButton
-          v-if="sessions.length"
-          text="Revocar todas"
-          severity="danger"
-          size="sm"
-          @click="showRevokeAll = true"
-        />
+  <Admin.Page title="Sesiones" description="Sesiones de usuario actualmente activas." icon="IconDeviceDesktop" color="gray">
+    <template #breadcrumb>
+      <NuxtLink to="/backoffice" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Inicio</NuxtLink>
+      <span class="text-xs text-slate-300 dark:text-slate-600">/</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">Administración</span>
+    </template>
+    <template #actions>
+      <App.Button text="Revocar todas" severity="danger" size="sm" @click="showRevokeAllModal = true" />
+    </template>
+    <template #tabs="{ color }">
+      <Nav.Tabs :tabs="adminTabs" :color="color" />
+    </template>
+
+    <Table.Standard
+      ref="tableRef"
+      name="sessions"
+      endpoint="backoffice/sessions"
+      :columns="columns"
+      search-placeholder="Buscar por usuario o IP…"
+      :cached="false"
+    >
+      <template #user_name="{ row }">
+        <div>
+          <p class="text-sm font-medium text-foreground">{{ row.user?.name ?? row.user_name ?? '—' }}</p>
+          <p class="text-xs text-muted-foreground">{{ row.user?.email ?? row.user_email ?? '' }}</p>
+        </div>
       </template>
-    </AdminPageHeader>
 
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-      <div v-if="loading" class="px-5 py-16 flex items-center justify-center">
-        <AppLoadingState />
-      </div>
+      <template #ip_address="{ value }">
+        <span class="text-sm font-mono text-muted-foreground">{{ value ?? '—' }}</span>
+      </template>
 
-      <div v-else-if="!sessions.length" class="px-5 py-16">
-        <AppEmptyState
-          title="Sin sesiones activas"
-          description="No hay sesiones activas en este momento."
-        />
-      </div>
+      <template #device="{ row }">
+        <span class="text-sm text-muted-foreground">{{ row.device ?? row.user_agent ?? '—' }}</span>
+      </template>
 
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Usuario</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">IP</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dispositivo</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Último acceso</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            <tr
-              v-for="session in sessions"
-              :key="session.id"
-              class="hover:bg-slate-50 dark:bg-slate-700/30 transition-colors"
-            >
-              <td class="px-5 py-3">
-                <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
-                  {{ session.user?.name ?? session.user_name ?? '—' }}
-                </p>
-                <p class="text-xs text-slate-400">
-                  {{ session.user?.email ?? session.user_email ?? '' }}
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm font-mono text-slate-500 dark:text-slate-400">
-                {{ session.ip_address ?? session.ip ?? '—' }}
-              </td>
-              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">
-                {{ session.device ?? session.user_agent ?? '—' }}
-              </td>
-              <td class="px-5 py-3 text-sm text-slate-400 whitespace-nowrap">
-                {{ session.last_activity_at ?? session.last_activity ?? '—' }}
-              </td>
-              <td class="px-5 py-3 text-right">
-                <AppButton
-                  text="Revocar"
-                  severity="danger"
-                  size="xs"
-                  variant="dropdown"
-                  @click="revokeTarget = session"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <template #last_activity_at="{ row }">
+        <span class="text-sm text-muted-foreground whitespace-nowrap">
+          {{ row.last_activity_at ?? row.last_activity ?? '—' }}
+        </span>
+      </template>
 
-    <!-- Revocar sesión individual -->
-    <ModalDeleteConfirm
-      :model-value="!!revokeTarget"
+      <template #actions="{ row }">
+        <button type="button" @click.stop="openRevoke(row)"
+          class="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+          title="Revocar sesión"
+        >
+          <IconBan class="size-4" stroke="1.5" />
+        </button>
+      </template>
+    </Table.Standard>
+
+    <Modal.DeleteConfirm
+      v-model="showRevokeModal"
       title="Revocar sesión"
-      :message="`¿Seguro que deseas revocar la sesión de ${revokeTarget?.user?.name ?? revokeTarget?.user_name ?? 'este usuario'}?`"
+      :message="`¿Revocar la sesión de ${revokingSession?.user?.name ?? revokingSession?.user_name ?? 'este usuario'}?`"
       confirm-text="Revocar"
-      :loading="revokeLoading"
-      @update:model-value="revokeTarget = null"
+      :loading="revoking"
       @confirm="confirmRevoke"
     />
 
-    <!-- Revocar todas -->
-    <ModalDeleteConfirm
-      v-model="showRevokeAll"
+    <Modal.DeleteConfirm
+      v-model="showRevokeAllModal"
       title="Revocar todas las sesiones"
-      message="¿Seguro que deseas revocar TODAS las sesiones activas? Todos los usuarios serán desconectados."
+      message="Todos los usuarios serán desconectados inmediatamente."
       confirm-text="Revocar todas"
-      :loading="revokeAllLoading"
+      :loading="revokingAll"
       @confirm="confirmRevokeAll"
     />
-  </div>
+  </Admin.Page>
 </template>

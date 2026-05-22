@@ -1,5 +1,5 @@
 <script setup>
-import { IconUsers as IconUsersTab, IconShieldCheck, IconClock, IconTrash, IconPencil } from '@tabler/icons-vue'
+import { IconUsers as IconUsersTab, IconShieldCheck, IconDeviceDesktop, IconTrash, IconPencil } from '@tabler/icons-vue'
 definePageMeta({ layout: 'backoffice', middleware: ['auth'] })
 
 const api      = useApi()
@@ -9,7 +9,7 @@ const tableRef = ref(null)
 const adminTabs = [
   { label: 'Usuarios',  to: '/backoffice/admin/users',    icon: IconUsersTab    },
   { label: 'Roles',     to: '/backoffice/admin/roles',    icon: IconShieldCheck },
-  { label: 'Sesiones',  to: '/backoffice/admin/sessions', icon: IconClock       },
+  { label: 'Sesiones',  to: '/backoffice/admin/sessions', icon: IconDeviceDesktop },
 ]
 
 const columns = [

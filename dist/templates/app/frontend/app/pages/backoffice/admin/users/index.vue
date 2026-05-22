@@ -1,313 +1,391 @@
 <script setup>
+import { IconUsers, IconShieldCheck, IconDeviceDesktop, IconTrash, IconPencil, IconRefresh, IconExternalLink } from '@tabler/icons-vue'
 definePageMeta({ layout: 'backoffice', middleware: ['auth'] })
 
-const toast = useToast()
-const { index: fetchUsersApi, destroy, reactivate, resetPassword } = useUsers()
+const api    = useApi()
+const toast  = useToast()
+const tableRef = ref(null)
 
-const loading = ref(false)
-const users = ref([])
+const rtf = new Intl.RelativeTimeFormat('es', { numeric: 'auto' })
+const timeAgo = (date) => {
+  if (!date) return '—'
+  const diff = (new Date(date).getTime() - Date.now()) / 1000
+  for (const [unit, secs] of [['year',31536000],['month',2592000],['week',604800],['day',86400],['hour',3600],['minute',60],['second',1]]) {
+    if (Math.abs(diff) >= secs || unit === 'second') return rtf.format(Math.round(diff / secs), unit)
+  }
+}
 
-// Search
-const search = ref('')
-let searchTimeout = null
-watch(search, () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => fetchUsers(), 300)
+const adminTabs = [
+  { label: 'Usuarios',  to: '/backoffice/admin/users',    icon: IconUsers         },
+  { label: 'Roles',     to: '/backoffice/admin/roles',    icon: IconShieldCheck   },
+  { label: 'Sesiones',  to: '/backoffice/admin/sessions', icon: IconDeviceDesktop },
+]
+
+const columns = [
+  { key: 'name',               label: 'Nombre',        sortable: true },
+  { key: 'email',              label: 'Email',         sortable: true },
+  { key: 'roles',              label: 'Roles' },
+  { key: 'status',             label: 'Estado',        sortable: true },
+  { key: 'two_factor_enabled', label: '2FA',           sortable: true, size: 80 },
+  { key: 'otp_configured',     label: 'OTP',           size: 80 },
+  { key: 'seen_at',            label: 'Último acceso', sortable: true },
+  { key: 'created_at',         label: 'Creado',        sortable: true },
+  { key: 'actions',            label: '',              size: 100 },
+]
+
+const statusConfig = {
+  active:           { label: 'Activo',              class: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' },
+  invited:          { label: 'Invitado',             class: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' },
+  password_pending: { label: 'Contraseña pendiente', class: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' },
+  unverified:       { label: 'Sin verificar',        class: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300' },
+  never_logged_in:  { label: 'Nunca ha ingresado',   class: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' },
+  deleted:          { label: 'Eliminado',            class: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300' },
+}
+
+const statusOptions = Object.entries(statusConfig).map(([value, { label }]) => ({ value, label }))
+const defaultStatuses = statusOptions.filter(s => s.value !== 'deleted').map(s => s.value)
+const selectedStatuses = ref([...defaultStatuses])
+
+const STATUS_CACHE_KEY = 'table-statuses-users'
+try {
+  const cached = sessionStorage.getItem(STATUS_CACHE_KEY)
+  if (cached) selectedStatuses.value = JSON.parse(cached)
+} catch {}
+watch(selectedStatuses, (v) => sessionStorage.setItem(STATUS_CACHE_KEY, JSON.stringify(v)), { deep: true })
+
+const showStatusDropdown = ref(false)
+const statusDropdownRef  = ref(null)
+
+const toggleStatus = (value) => {
+  const idx = selectedStatuses.value.indexOf(value)
+  if (idx >= 0) selectedStatuses.value.splice(idx, 1)
+  else selectedStatuses.value.push(value)
+}
+
+const onStatusOutsideClick = (e) => {
+  if (statusDropdownRef.value && !statusDropdownRef.value.contains(e.target))
+    showStatusDropdown.value = false
+}
+watch(showStatusDropdown, (v) => {
+  if (v) document.addEventListener('mousedown', onStatusOutsideClick)
+  else   document.removeEventListener('mousedown', onStatusOutsideClick)
 })
 
-// Tabs
-const activeTab = ref('active')
-watch(activeTab, () => fetchUsers())
+const isStatusFiltered = computed(() => selectedStatuses.value.length !== statusOptions.length)
+const resetStatuses = () => { selectedStatuses.value = [...defaultStatuses] }
+const tableParams = computed(() => ({ statuses: selectedStatuses.value }))
 
-// Delete modal
-const deleteTarget = ref(null)
-const deleteLoading = ref(false)
+// ─── Delete ──────────────────────────────────────────────────────────────────
+const showDeleteModal = ref(false)
+const deletingUser    = ref(null)
+const deleting        = ref(false)
 
-// Reactivate modal
-const reactivateTarget = ref(null)
-const reactivateLoading = ref(false)
-
-// Reset password modal
-const resetTarget = ref(null)
-const resetLoading = ref(false)
-
-async function fetchUsers() {
-  loading.value = true
-  try {
-    const data = await fetchUsersApi({
-      search: search.value,
-      with_roles: 1,
-      trashed: activeTab.value === 'deleted' ? 1 : 0,
-    })
-    users.value = data?.data ?? data ?? []
-  } catch {
-    toast.error('Error al cargar los usuarios.')
-  } finally {
-    loading.value = false
-  }
+const openDelete = (row) => {
+  deletingUser.value = row
+  showDeleteModal.value = true
 }
 
-async function confirmDelete() {
-  deleteLoading.value = true
+const confirmDelete = async () => {
+  if (!deletingUser.value) return
+  deleting.value = true
   try {
-    await destroy(deleteTarget.value.id)
+    await api.delete(`backoffice/users/${deletingUser.value.id}`)
     toast.success('Usuario eliminado.')
-    users.value = users.value.filter(u => u.id !== deleteTarget.value.id)
-    deleteTarget.value = null
-  } catch {
-    toast.error('Error al eliminar el usuario.')
+    showDeleteModal.value = false
+    tableRef.value?.closePreview()
+    tableRef.value?.reload()
+  } catch (e) {
+    toast.error(e?.data?.message ?? 'Error al eliminar el usuario.')
   } finally {
-    deleteLoading.value = false
+    deleting.value = false
   }
 }
 
-async function confirmReactivate() {
-  reactivateLoading.value = true
-  try {
-    await reactivate(reactivateTarget.value.id)
-    toast.success('Usuario reactivado. Se envió un email de activación.')
-    users.value = users.value.filter(u => u.id !== reactivateTarget.value.id)
-    reactivateTarget.value = null
-  } catch {
-    toast.error('Error al reactivar el usuario.')
-  } finally {
-    reactivateLoading.value = false
-  }
+// ─── Reset password ───────────────────────────────────────────────────────────
+const showResetModal = ref(false)
+const resetTarget    = ref(null)
+const resetting      = ref(false)
+
+const openReset = (row) => {
+  resetTarget.value = row
+  showResetModal.value = true
 }
 
-async function confirmResetPassword() {
-  resetLoading.value = true
+const confirmReset = async () => {
+  if (!resetTarget.value) return
+  resetting.value = true
   try {
-    await resetPassword(resetTarget.value.id, { mode: 'email' })
+    await api.post(`backoffice/users/${resetTarget.value.id}/reset-password`, { mode: 'email' })
     toast.success('Email de recuperación enviado.')
+    showResetModal.value = false
     resetTarget.value = null
-  } catch {
-    toast.error('Error al enviar el email de recuperación.')
+  } catch (e) {
+    toast.error(e?.data?.message ?? 'Error al enviar el email de recuperación.')
   } finally {
-    resetLoading.value = false
+    resetting.value = false
   }
 }
-
-onMounted(fetchUsers)
 </script>
 
 <template>
-  <div>
-    <AdminPageHeader title="Usuarios" description="Gestión de usuarios del sistema.">
-      <template #actions>
-        <AppButton
-          text="Nuevo usuario"
-          severity="primary"
-          size="sm"
-          type="link"
-          link="/backoffice/admin/users/new"
-        />
+  <Admin.Page title="Usuarios" description="Gestión de usuarios del sistema." icon="IconUsers" color="gray">
+    <template #breadcrumb>
+      <NuxtLink to="/backoffice" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Inicio</NuxtLink>
+      <span class="text-xs text-slate-300 dark:text-slate-600">/</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">Administración</span>
+    </template>
+    <template #actions>
+      <App.Button type="link" link="/backoffice/admin/users/new" text="Nuevo usuario" size="sm" />
+    </template>
+    <template #tabs="{ color }">
+      <Nav.Tabs :tabs="adminTabs" :color="color" />
+    </template>
+
+    <Table.Standard
+      ref="tableRef"
+      name="users"
+      endpoint="backoffice/users"
+      :columns="columns"
+      :params="tableParams"
+      :show-filters="false"
+      search-placeholder="Buscar por nombre o email…"
+      :cached="true"
+      :checkable="true"
+    >
+      <!-- Estado filter dropdown -->
+      <template #toolbar>
+        <div class="relative" ref="statusDropdownRef">
+          <button
+            type="button"
+            @click="showStatusDropdown = !showStatusDropdown"
+            :class="[
+              'py-1.5 px-3 inline-flex items-center gap-2 text-sm font-medium rounded-lg border transition-colors',
+              isStatusFiltered && selectedStatuses.length > 0
+                ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:border-indigo-500 dark:text-indigo-300'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+            ]"
+          >
+            Estado
+            <span v-if="isStatusFiltered && selectedStatuses.length > 0" class="text-xs font-semibold">({{ selectedStatuses.length }})</span>
+          </button>
+
+          <Transition
+            enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0 translate-y-1 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition ease-in duration-100"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1 scale-95"
+          >
+            <div
+              v-if="showStatusDropdown"
+              class="absolute top-full left-0 z-50 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-1.5 min-w-52"
+            >
+              <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 pt-1.5 pb-2">Estado</p>
+              <label
+                v-for="opt in statusOptions"
+                :key="opt.value"
+                class="flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  :checked="selectedStatuses.includes(opt.value)"
+                  @change="toggleStatus(opt.value)"
+                  class="rounded border-gray-300 dark:bg-slate-700 dark:border-slate-600 text-blue-600 focus:ring-0 focus:ring-offset-0"
+                />
+                <span class="text-sm text-slate-700 dark:text-slate-200">{{ opt.label }}</span>
+              </label>
+              <div class="border-t border-slate-100 dark:border-slate-700 mt-1.5 pt-1.5 px-2">
+                <button
+                  type="button"
+                  @click="resetStatuses"
+                  class="w-full text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >Restablecer</button>
+              </div>
+            </div>
+          </Transition>
+        </div>
       </template>
-    </AdminPageHeader>
 
-    <!-- Search + Tabs -->
-    <div class="mb-4 flex flex-col sm:flex-row sm:items-center gap-3">
-      <div class="relative w-full sm:max-w-xs">
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Buscar usuarios..."
-          class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 pl-9 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <svg class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-        </svg>
-      </div>
+      <!-- Roles -->
+      <template #roles="{ value }">
+        <div class="flex flex-wrap gap-1">
+          <template v-if="Array.isArray(value) && value.length">
+            <span
+              v-for="(role, i) in value"
+              :key="i"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+            >{{ role?.name }}</span>
+          </template>
+          <span v-else class="text-xs text-slate-400">—</span>
+        </div>
+      </template>
 
-      <div class="flex gap-1 bg-slate-100 dark:bg-slate-700/50 rounded-lg p-1 w-fit">
-        <button
-          type="button"
-          class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
-          :class="activeTab === 'active'
-            ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
-          @click="activeTab = 'active'"
-        >
-          Activos
-        </button>
-        <button
-          type="button"
-          class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
-          :class="activeTab === 'deleted'
-            ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
-          @click="activeTab = 'deleted'"
-        >
-          Eliminados
-        </button>
-      </div>
-    </div>
+      <!-- Estado -->
+      <template #status="{ value }">
+        <span v-if="statusConfig[value]"
+          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+          :class="statusConfig[value].class"
+        >{{ statusConfig[value].label }}</span>
+        <span v-else class="text-xs text-slate-400">—</span>
+      </template>
 
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-      <div v-if="loading" class="px-5 py-16 flex items-center justify-center">
-        <AppLoadingState />
-      </div>
+      <!-- 2FA -->
+      <template #two_factor_enabled="{ value }">
+        <span v-if="value" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">Activo</span>
+        <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">—</span>
+      </template>
 
-      <div v-else-if="!users.length" class="px-5 py-16">
-        <AppEmptyState
-          :title="activeTab === 'deleted' ? 'Sin usuarios eliminados' : 'Sin usuarios'"
-          :description="activeTab === 'deleted' ? 'No hay usuarios eliminados.' : 'Aún no hay usuarios registrados en el sistema.'"
-        />
-      </div>
+      <!-- OTP -->
+      <template #otp_configured="{ value }">
+        <span v-if="value" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">Sí</span>
+        <span v-else class="text-xs text-slate-400">—</span>
+      </template>
 
-      <!-- Tab: Activos -->
-      <div v-else-if="activeTab === 'active'" class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Roles</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Creado</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            <tr
-              v-for="user in users"
-              :key="user.id"
-              class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+      <!-- Último acceso -->
+      <template #seen_at="{ value }">
+        <span class="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap" :title="value ? new Date(value).toLocaleString('es-CL') : ''">
+          {{ timeAgo(value) }}
+        </span>
+      </template>
+
+      <!-- Fecha creación -->
+      <template #created_at="{ value }">
+        <span class="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+          {{ value ? new Date(value).toLocaleDateString('es-CL') : '—' }}
+        </span>
+      </template>
+
+      <!-- Acciones -->
+      <template #actions="{ row }">
+        <div class="flex items-center gap-0.5">
+          <NuxtLink
+            v-if="row?.id"
+            :to="`/backoffice/admin/users/${row.id}`"
+            class="inline-flex items-center justify-center size-8 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+            @click.stop
+          >
+            <IconPencil class="size-4" stroke="1.5" />
+          </NuxtLink>
+          <button
+            type="button"
+            @click.stop="openReset(row)"
+            class="inline-flex items-center justify-center size-8 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+            title="Resetear contraseña"
+          >
+            <IconRefresh class="size-4" stroke="1.5" />
+          </button>
+          <button
+            type="button"
+            @click.stop="openDelete(row)"
+            class="inline-flex items-center justify-center size-8 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+          >
+            <IconTrash class="size-4" stroke="1.5" />
+          </button>
+        </div>
+      </template>
+
+      <!-- Preview panel header -->
+      <template #preview-header="{ row, close }">
+        <div class="flex items-center justify-between px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="size-9 rounded-full bg-blue-600 text-white text-sm font-semibold flex items-center justify-center uppercase shrink-0">
+              {{ row.name?.split(' ').slice(0,2).map(p => p[0]).join('') ?? '?' }}
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-foreground truncate">{{ row.name }}</p>
+              <p class="text-xs text-muted-foreground truncate">{{ row.email }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              @click="openDelete(row)"
+              class="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+              title="Eliminar usuario"
             >
-              <td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ user.name }}</td>
-              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">{{ user.email }}</td>
-              <td class="px-5 py-3">
-                <div class="flex flex-wrap gap-1">
-                  <AppTag
-                    v-for="role in (user.roles ?? [])"
-                    :key="role.id ?? role"
-                    :text="role.name ?? role"
-                    severity="secondary"
-                    size="xs"
-                  />
-                  <span v-if="!user.roles?.length" class="text-xs text-slate-400">—</span>
-                </div>
-              </td>
-              <td class="px-5 py-3 text-sm text-slate-400 whitespace-nowrap">{{ user.created_at ?? '—' }}</td>
-              <td class="px-5 py-3 text-right">
-                <AppDropdown
-                  trigger-text="···"
-                  placement="bottom-right"
-                  :items="[
-                    { label: 'Ver detalle', type: 'button', action: () => navigateTo(`/backoffice/admin/users/${user.id}`) },
-                    { label: 'Resetear contraseña', type: 'button', action: () => resetTarget = user },
-                    { label: 'Eliminar', type: 'button', severity: 'danger', action: () => deleteTarget = user },
-                  ]"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Tab: Eliminados -->
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Eliminado</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            <tr
-              v-for="user in users"
-              :key="user.id"
-              class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+              <IconTrash class="size-4" stroke="1.5" />
+            </button>
+            <NuxtLink
+              :to="`/backoffice/admin/users/${row.id}`"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
             >
-              <td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ user.name }}</td>
-              <td class="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">{{ user.email }}</td>
-              <td class="px-5 py-3 text-sm text-slate-400 whitespace-nowrap">{{ user.deleted_at ?? '—' }}</td>
-              <td class="px-5 py-3 text-right">
-                <AppButton
-                  text="Reactivar"
-                  severity="secondary"
-                  size="xs"
-                  @click="reactivateTarget = user"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+              Abrir
+              <IconExternalLink class="size-3" stroke="1.5" />
+            </NuxtLink>
+            <button
+              type="button"
+              @click="close"
+              class="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted-hover transition-colors"
+            >
+              <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </template>
 
-    <!-- Modal: Eliminar -->
-    <ModalDeleteConfirm
-      :model-value="!!deleteTarget"
-      title="Eliminar usuario"
-      :message="`¿Seguro que deseas eliminar a ${deleteTarget?.name}? Esta acción no se puede deshacer.`"
-      :loading="deleteLoading"
-      @update:model-value="deleteTarget = null"
+      <!-- Preview panel body -->
+      <template #preview="{ row }">
+        <div class="p-4 space-y-4">
+          <!-- Estado + badges -->
+          <div class="flex flex-wrap gap-2">
+            <span v-if="statusConfig[row.status]"
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+              :class="statusConfig[row.status].class"
+            >{{ statusConfig[row.status].label }}</span>
+            <span v-if="row.two_factor_enabled" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">2FA activo</span>
+            <span v-if="row.otp_configured" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">OTP configurado</span>
+          </div>
+
+          <!-- Roles -->
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5">Roles</p>
+            <div class="flex flex-wrap gap-1.5">
+              <template v-if="Array.isArray(row.roles) && row.roles.length">
+                <span v-for="(role, i) in row.roles" :key="i"
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                >{{ role?.name }}</span>
+              </template>
+              <span v-else class="text-xs text-slate-400">Sin roles asignados</span>
+            </div>
+          </div>
+
+          <!-- Datos -->
+          <div class="space-y-2">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Información</p>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div>
+                <p class="text-xs text-slate-400 dark:text-slate-500">Último acceso</p>
+                <p class="text-slate-700 dark:text-slate-300 font-medium">{{ timeAgo(row.seen_at) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400 dark:text-slate-500">Creado</p>
+                <p class="text-slate-700 dark:text-slate-300 font-medium">{{ row.created_at ? new Date(row.created_at).toLocaleDateString('es-CL') : '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Table.Standard>
+
+    <Modal.DeleteConfirm
+      v-model="showDeleteModal"
+      :title="`Eliminar a ${deletingUser?.name ?? 'usuario'}`"
+      message="Esta acción eliminará al usuario permanentemente y no puede deshacerse."
+      :loading="deleting"
       @confirm="confirmDelete"
     />
 
-    <!-- Modal: Reactivar -->
-    <Teleport to="body">
-      <div
-        v-if="reactivateTarget"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
-        @click.self="reactivateTarget = null"
-      >
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
-          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200">Reactivar usuario</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400">
-            Se enviará un email de activación al usuario <span class="font-medium text-slate-700 dark:text-slate-300">{{ reactivateTarget.email }}</span>.
-          </p>
-          <div class="flex justify-end gap-2 pt-2">
-            <AppButton
-              text="Cancelar"
-              severity="secondary"
-              size="sm"
-              @click="reactivateTarget = null"
-            />
-            <AppButton
-              text="Reactivar"
-              severity="primary"
-              size="sm"
-              :loading="reactivateLoading"
-              @click="confirmReactivate"
-            />
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- Modal: Resetear contraseña -->
-    <Teleport to="body">
-      <div
-        v-if="resetTarget"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
-        @click.self="resetTarget = null"
-      >
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
-          <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200">Resetear contraseña</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400">
-            Se enviará un email de recuperación de contraseña a <span class="font-medium text-slate-700 dark:text-slate-300">{{ resetTarget.email }}</span>.
-          </p>
-          <div class="flex justify-end gap-2 pt-2">
-            <AppButton
-              text="Cancelar"
-              severity="secondary"
-              size="sm"
-              @click="resetTarget = null"
-            />
-            <AppButton
-              text="Enviar email"
-              severity="primary"
-              size="sm"
-              :loading="resetLoading"
-              @click="confirmResetPassword"
-            />
-          </div>
-        </div>
-      </div>
-    </Teleport>
-  </div>
+    <!-- Reset password modal -->
+    <Modal.Base v-model="showResetModal" title="Resetear contraseña" size="sm">
+      <p class="text-sm text-muted-foreground">
+        Se enviará un email de recuperación a
+        <span class="font-medium text-foreground">{{ resetTarget?.email }}</span>.
+      </p>
+      <template #footer>
+        <App.Button text="Cancelar" severity="secondary" size="sm" @click="showResetModal = false" />
+        <App.Button text="Enviar email" severity="primary" size="sm" :loading="resetting" @click="confirmReset" />
+      </template>
+    </Modal.Base>
+  </Admin.Page>
 </template>

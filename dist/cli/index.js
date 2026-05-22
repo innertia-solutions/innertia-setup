@@ -119,6 +119,7 @@ async function scaffoldProject(templateDir, targetDir, vars) {
   for (const file of files) {
     const filePath = path.join(targetDir, file);
     if (isBinary(filePath)) continue;
+    if (path.basename(file) === ".npmignore") continue;
     const content = await fs.readFile(filePath, "utf-8");
     const substituted = substituteVariables(content, vars);
     await fs.writeFile(filePath, substituted, "utf-8");
@@ -142,6 +143,14 @@ async function scaffoldProject(templateDir, targetDir, vars) {
 import { execSync } from "child_process";
 import { existsSync, copyFileSync } from "fs";
 import path2 from "path";
+function resolveComposerDir(projectDir) {
+  const apiDir = path2.join(projectDir, "api");
+  const backendDir = path2.join(projectDir, "backend");
+  if (existsSync(path2.join(apiDir, "composer.json"))) return apiDir;
+  if (existsSync(path2.join(backendDir, "composer.json"))) return backendDir;
+  if (existsSync(path2.join(projectDir, "composer.json"))) return projectDir;
+  return null;
+}
 function runPostInstall(projectDir, onMessage) {
   onMessage?.("Initializing git repository...");
   execSync("git init", { cwd: projectDir, stdio: "pipe" });
@@ -150,8 +159,7 @@ function runPostInstall(projectDir, onMessage) {
     'git commit -m "chore: initial project scaffold (innertia-setup)"',
     { cwd: projectDir, stdio: "pipe", env: { ...process.env, GIT_CONFIG_COUNT: "1", GIT_CONFIG_KEY_0: "commit.gpgsign", GIT_CONFIG_VALUE_0: "false" } }
   );
-  const backendDir = path2.join(projectDir, "backend");
-  const composerDir = existsSync(path2.join(backendDir, "composer.json")) ? backendDir : existsSync(path2.join(projectDir, "composer.json")) ? projectDir : null;
+  const composerDir = resolveComposerDir(projectDir);
   if (composerDir) {
     const envExample = path2.join(composerDir, ".env.example");
     const envFile = path2.join(composerDir, ".env");

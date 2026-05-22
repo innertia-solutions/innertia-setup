@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: .
+      context: ./api
       dockerfile: docker/prod/Dockerfile
     restart: unless-stopped
     environment:
