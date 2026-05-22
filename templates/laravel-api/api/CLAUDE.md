@@ -7,8 +7,16 @@
 - `innertia-solutions/laravel-innertia` — modo `api`: clients, API keys, middleware apikey, Olimpo
 - Autenticación: X-Api-Key (sin JWT, sin usuarios)
 
+## Estructura del repositorio
+
+```
+{{PROJECT_NAME}}/
+├── api/          ← código Laravel (este directorio)
+└── compose.yml   ← Docker Compose en el root
+```
+
 ## Commands
-- `docker compose up` — inicia todos los servicios
+- `docker compose up` — inicia todos los servicios (correr desde el root del repo)
 - `docker compose exec api php artisan migrate`
 - `docker compose exec api php artisan tinker`
 - `docker compose exec api php artisan test`
