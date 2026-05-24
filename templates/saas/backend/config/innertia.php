@@ -57,6 +57,43 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Organizations (opt-in second-level scoping)
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, adds an Organization layer ON TOP of the existing Tenant
+    | layer. Useful when a single tenant has multiple business units that
+    | shouldn't see each other's data by default — e.g. a consulting firm
+    | tenant with many client orgs inside, or a holding tenant with many
+    | subsidiaries. Also enables scoped RBAC: same user can be admin in one
+    | org and viewer in another within the same tenant.
+    |
+    | Setup:
+    |   1. Set 'enabled' => true and list your domain tables in 'tables'
+    |   2. php artisan innertia:organization:install
+    |   3. php artisan migrate
+    |   4. Add `use HasOrganization` to scoped models
+    |   5. Add 'organization.resolve' + 'organization.require' middleware to protected routes
+    |   6. Client sends header: X-Organization: <slug>
+    |
+    | Forcibly inactive in api mode regardless of setting. Off by default.
+    | Full guide: vendor/innertia-solutions/laravel-innertia/docs/organizations.md
+    |
+    */
+
+    // 'organizations' => [
+    //     'enabled'    => false,
+    //     'tables'     => [
+    //         // 'documents',
+    //         // 'projects',
+    //         // 'invoices',
+    //     ],
+    //     'column'     => 'organization_id',
+    //     'with_index' => true,
+    //     // 'model'   => \App\Domains\Organizations\Models\Organization::class,
+    // ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Auth Defaults
     |--------------------------------------------------------------------------
     |

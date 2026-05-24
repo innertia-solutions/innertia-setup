@@ -43,6 +43,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Organizations (opt-in second-level scoping)
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, adds an Organization layer on top of the Tenant layer (or
+    | directly under the app, in single-tenant mode). Useful when you need to
+    | separate data between business units within the same tenant or app —
+    | e.g. a consulting firm managing multiple clients, a holding with
+    | multiple subsidiaries, or logical isolation between departments.
+    |
+    | Setup:
+    |   1. Set 'enabled' => true and list your domain tables in 'tables'
+    |   2. php artisan innertia:organization:install
+    |   3. php artisan migrate
+    |   4. Add `use HasOrganization` to scoped models
+    |   5. Add 'organization.resolve' + 'organization.require' middleware to protected routes
+    |   6. Client sends header: X-Organization: <slug>
+    |
+    | Forcibly inactive in api mode regardless of setting. Off by default.
+    | Full guide: vendor/innertia-solutions/laravel-innertia/docs/organizations.md
+    |
+    */
+
+    // 'organizations' => [
+    //     'enabled'    => false,
+    //     'tables'     => [
+    //         // 'documents',
+    //         // 'projects',
+    //         // 'invoices',
+    //     ],
+    //     'column'     => 'organization_id',
+    //     'with_index' => true,
+    //     // 'model'   => \App\Domains\Organizations\Models\Organization::class,
+    // ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Auth Defaults
     |--------------------------------------------------------------------------
     |

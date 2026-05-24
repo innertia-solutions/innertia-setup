@@ -112,3 +112,31 @@ class OrdersController
     }
 }
 ```
+
+## Organizations (opt-in)
+
+Second-level scoping that stacks ON TOP of the existing Tenant layer. Useful when a single tenant manages multiple isolated business units.
+
+**Model:**
+- `Innertia::tenant()` — outer scope (existing)
+- `Innertia::organization()` — inner scope (this feature)
+- Both must resolve for a request to proceed under `organization.require` middleware
+
+**When activated:**
+- Trait `HasOrganization` on scoped models (use alongside `HasTenant`)
+- Middleware: `tenant.resolve → tenant.require → organization.resolve → organization.require`
+- Client sends both: `X-Tenant: acme` + `X-Organization: north-america`
+- Optional consolidated view: add `X-Consolidated: true` — the middleware populates `scope()` from `auth()->user()->accessibleOrganizationIds()` (implement that method on your User to return the org IDs the user can read)
+- Roles can be global (per tenant) or scoped (per organization). `$user->hasRole('admin', organizationId: 5)`.
+- Permission cache keys auto-include the active org id
+
+**Activation:**
+
+```bash
+# 1. Uncomment + configure 'organizations' block in config/innertia.php
+docker compose exec api php artisan innertia:organization:install
+docker compose exec api php artisan migrate
+docker compose exec api php artisan innertia:organization:check   # CI guard
+```
+
+Full reference: `vendor/innertia-solutions/laravel-innertia/docs/organizations.md`.

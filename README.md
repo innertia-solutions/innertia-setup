@@ -32,6 +32,16 @@ npx tsx scripts/create.ts <nombre-proyecto> <template>
 | `app` | Monorepo Laravel + Nuxt + Docker Compose |
 | `saas` | Monorepo Laravel + Nuxt + Multitenancy + TanStack Query |
 
+### Organizations (opt-in)
+
+Both the `app` and `saas` templates ship with the Organizations feature scaffolded but **disabled**. It's a second-level scoping layer (separate business units, departments, or client orgs within a tenant) that you can enable by uncommenting the `organizations` block in `backend/config/innertia.php` after the project is created.
+
+- `app` template → use for logical separation within a single-tenant app
+- `saas` template → use to stack a second scope inside each tenant
+- `laravel-api` template → not applicable (api mode blocks the feature)
+
+Full guide once installed: `vendor/innertia-solutions/laravel-innertia/docs/organizations.md`.
+
 ---
 
 ## Template `saas` — Stack completo

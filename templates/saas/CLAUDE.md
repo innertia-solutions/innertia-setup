@@ -240,3 +240,11 @@ backend/app/
 - UseCases extienden `\Innertia\Platform\Contracts\UseCase`, reciben parámetros en constructor.
 - Models tenant usan `HasTenant` trait — global scope automático por `tenant_id`.
 - IDs son UUID via `HasUuid` trait.
+
+## Organizations (opt-in)
+
+Optional second-level scoping that lives **inside** each Tenant. Useful when a single tenant has multiple business units that should not share data — e.g. a consulting firm tenant with many client orgs inside, or a holding tenant with multiple subsidiaries.
+
+Stacks with Tenant: `Innertia::tenant()` resolves the outer scope, `Innertia::organization()` the inner one. Same user can have different roles per organization within the same tenant (e.g. admin in org A, viewer in org B).
+
+Activation lives in `backend/config/innertia.php` (see the commented `organizations` block). Full guide: `vendor/innertia-solutions/laravel-innertia/docs/organizations.md`.

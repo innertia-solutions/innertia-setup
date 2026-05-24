@@ -86,3 +86,9 @@ class CreateUser extends UseCase
 
 // Uso: (new CreateUser)($name, $email, $password);
 ```
+
+## Organizations (opt-in)
+
+Optional second-level scoping. The `app` template runs single-tenant, but you can still enable Organizations for **logical separation within the app** — e.g. departments, business units, regions — without introducing a full SaaS multi-tenant model.
+
+Activation lives in `backend/config/innertia.php` (see the commented `organizations` block). Full guide: `vendor/innertia-solutions/laravel-innertia/docs/organizations.md`.

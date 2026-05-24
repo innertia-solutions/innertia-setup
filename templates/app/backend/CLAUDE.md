@@ -114,3 +114,29 @@ class OrdersController
     }
 }
 ```
+
+## Organizations (opt-in)
+
+Second-level scoping that lives inside the app. Useful for logical isolation between departments, business units, or regions when you don't need full multi-tenancy.
+
+**When activated:**
+- Trait `HasOrganization` on scoped models (sister of `HasTenant`)
+- Facade `Innertia::organization()->current() / scope() / set()`
+- Middleware aliases `organization.resolve` (reads `X-Organization` header) + `organization.require`
+- Roles can be scoped via `roles.organization_id` and `model_roles.organization_id`
+- `$user->hasRole('admin', organizationId: 5)` checks per-org assignments
+- Permission cache keys include the active org id automatically
+
+**Activation:**
+
+```bash
+# 1. Uncomment + configure the 'organizations' block in config/innertia.php
+# 2. Generate the consolidated migration
+docker compose exec api php artisan innertia:organization:install
+# 3. Apply it
+docker compose exec api php artisan migrate
+# 4. (Optional, CI guard) Verify model/config/schema coherence
+docker compose exec api php artisan innertia:organization:check
+```
+
+Full reference: `vendor/innertia-solutions/laravel-innertia/docs/organizations.md`.
