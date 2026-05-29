@@ -6,7 +6,7 @@
 - PostgreSQL 16, Redis 7
 - Docker Compose
 - `innertia-solutions/laravel-innertia` — DataTable, ActivityLogger, EntityHistory, HasNanoId, Auditable, TenantManager
-- `tymon/jwt-auth` — autenticación JWT
+- JWT propio (firebase/php-jwt vía el codec de innertia-laravel)
 - `@tanstack/vue-query` — cache y orquestación de fetching (via `nuxt-app` layer)
 
 ## Commands

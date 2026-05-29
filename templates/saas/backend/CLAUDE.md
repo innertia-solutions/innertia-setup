@@ -5,7 +5,7 @@
 - PostgreSQL 16, Redis 7
 - Docker + Xdebug
 - `innertia-solutions/laravel-innertia` — Auth (JWT), DataTable, ActivityLogger, EntityHistory, UseCase, DomainEvent, Webhooks, Settings
-- `tymon/jwt-auth` — autenticación JWT
+- JWT propio (firebase/php-jwt vía el codec de innertia-laravel)
 
 ## Commands
 - `docker compose up` — inicia todos los servicios
