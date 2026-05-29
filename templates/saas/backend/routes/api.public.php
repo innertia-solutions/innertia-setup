@@ -6,7 +6,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Innertia\Auth\Http\Controllers\AuthController;
-use App\Apps\Backoffice\Auth\PasswordController;
+use Innertia\Auth\Http\Controllers\PasswordController;
 use Innertia\Auth\Http\Controllers\EmailVerificationController;
 use Innertia\Auth\Http\Controllers\OtpController;
 use Innertia\Auth\Http\Controllers\SocialAuthController;
