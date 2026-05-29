@@ -9,7 +9,6 @@
         "innertia-solutions/laravel-innertia": "dev-main",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
-        "tymon/jwt-auth": "^2.1",
         "league/flysystem-aws-s3-v3": "^3.0"
     },
     "require-dev": {
