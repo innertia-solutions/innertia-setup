@@ -1,41 +1,20 @@
 <?php
 
-// stubs/saas/api.public.php — rutas sin autenticación (SaaS mode)
-// El middleware tenant.resolve resuelve el tenant del header X-Tenant en cada grupo.
-// Publicado por innertia-kit via: php artisan vendor:publish --tag=innertia-routes
+// api.public.php — rutas sin autenticación (SaaS mode).
+// ResolveTenantFromHeader lee X-Tenant: {slug} y resuelve el tenant.
 
 use Illuminate\Support\Facades\Route;
-use Innertia\Auth\Http\Controllers\AuthController;
-use Innertia\Auth\Http\Controllers\PasswordController;
-use Innertia\Auth\Http\Controllers\EmailVerificationController;
-use Innertia\Auth\Http\Controllers\OtpController;
-use Innertia\Auth\Http\Controllers\SocialAuthController;
-use Innertia\Auth\Http\Controllers\TwoFactorController;
 use Innertia\Saas\Http\Controllers\TenantController;
 use Innertia\Saas\Middleware\ResolveTenantFromHeader;
 
-// ── Tenant ping ───────────────────────────────────────────────────────────────
-// Usado por el middleware SSR del frontend para validar que el tenant existe y el backend responde.
-// ResolveTenantFromHeader lee X-Tenant: {slug} y retorna 404 si no existe.
-Route::middleware(ResolveTenantFromHeader::class)
-    ->get('ping', [TenantController::class, 'ping']);
+Route::middleware(ResolveTenantFromHeader::class)->group(function () {
 
-// ── Backoffice (contexto) ──────────────────────────────────────────────────────
-Route::middleware(ResolveTenantFromHeader::class)->prefix('backoffice/auth')->group(function () {
+    // Estado del tenant (boot SSR del frontend): tenant + features + branding.
+    Route::get('status', [TenantController::class, 'status']);
 
-    Route::post('login',             [AuthController::class, 'login']);
-    Route::post('otp/send',          [OtpController::class, 'send']);
-    Route::post('otp/verify',        [OtpController::class, 'verify']);
-    Route::post('2fa/verify',        [TwoFactorController::class, 'verify']);
-    Route::post('email/verify/send', [EmailVerificationController::class, 'send']);
-    Route::get ('email/verify',      [EmailVerificationController::class, 'verify'])->name('auth.email.verify');
-    Route::post('password/forgot',   [PasswordController::class, 'forgot']);
-    Route::post('password/reset',    [PasswordController::class, 'reset']);
-    Route::post('password/change',   [PasswordController::class, 'change']);
-    Route::post('password/set',      [PasswordController::class, 'set']);
+    // Autenticación del contexto backoffice (login, otp, 2fa, email, password, oauth).
+    \Innertia\Auth\Routes::publicRoutes('backoffice/auth');
 
-    Route::get('{provider}/redirect', [SocialAuthController::class, 'redirect'])
-        ->where('provider', 'google|microsoft|github');
-    Route::get('{provider}/callback', [SocialAuthController::class, 'callback'])
-        ->where('provider', 'google|microsoft|github');
+    // Rutas de auth propias del producto van aquí (mismo grupo).
+    // Multi-contexto: \Innertia\Auth\Routes::publicRoutes('technician/auth');
 });

@@ -5,9 +5,7 @@
 // Publicado por innertia-kit via: php artisan vendor:publish --tag=innertia-routes
 
 use Illuminate\Support\Facades\Route;
-use Innertia\Auth\Http\Controllers\AuthController;
 use Innertia\Auth\Http\Controllers\SocialSettingsController;
-use Innertia\Auth\Http\Controllers\TwoFactorController;
 use Innertia\Auth\Middleware\Authenticate;
 use Innertia\Notifications\Http\NotificationsController;
 use Innertia\Platform\Http\Controllers\SubscriptionController;
@@ -17,16 +15,7 @@ use Innertia\Saas\Middleware\ResolveTenantFromHeader;
 // ── Rutas de sesión — solo requieren autenticación (sin tenant obligatorio) ──
 // auth/me, refresh y logout se usan antes/después de seleccionar un tenant.
 Route::middleware([ResolveTenantFromHeader::class, Authenticate::class])->group(function () {
-
-    Route::prefix('auth')->group(function () {
-        Route::get ('me',             [AuthController::class, 'me']);
-        Route::get ('me/permissions', [AuthController::class, 'mePermissions']);
-        Route::post('refresh',        [AuthController::class, 'refresh']);
-        Route::post('logout',         [AuthController::class, 'logout']);
-        Route::post('2fa/enable',     [TwoFactorController::class, 'enable']);
-        Route::post('2fa/disable',    [TwoFactorController::class, 'disable']);
-    });
-
+    \Innertia\Auth\Routes::sessionRoutes();
 });
 
 // ── Rutas de negocio — requieren autenticación + tenant activo ───────────────
