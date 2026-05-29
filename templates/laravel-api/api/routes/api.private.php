@@ -3,11 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 // ── Rutas privadas (requieren X-Api-Key) ──────────────────────────────────────
-// Route::middleware('apikey')->group(function () {
+// Route::middleware('verify.api.key')->group(function () {
 //     // tus rutas aquí
-// });
-
-// ── Admin (Olimpo) ────────────────────────────────────────────────────────────
-// Route::middleware('apikey:admin.access')->prefix('admin')->group(function () {
-//     // gestión de api-keys, métricas, etc.
+//     // La organización autenticada se obtiene del request:
+//     //   $request->attributes->get('organization')  → Organization model
+//     //   $request->attributes->get('api_key')        → ApiKey model
 // });

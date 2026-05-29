@@ -1,10 +1,10 @@
 # {{PROJECT_NAME}} — Laravel API
 
 ## Stack
-- Laravel 13, PHP 8.3
+- Laravel 13, PHP 8.4
 - PostgreSQL 16, Redis 7
 - Docker + Xdebug
-- `innertia-solutions/laravel-innertia` — modo `api`: clients, API keys, middleware apikey, Olimpo
+- `innertia-solutions/laravel-innertia` — modo `api`: Organizations, ApiKeys, middleware `verify.api.key`, Olimpo
 - Autenticación: X-Api-Key (sin JWT, sin usuarios)
 
 ## Estructura del repositorio
@@ -50,8 +50,10 @@ app/
 - Controllers solo validan input y delegan a UseCases. Sin lógica de negocio.
 - UseCases extienden `\Innertia\Platform\Contracts\UseCase`, reciben parámetros en constructor, devuelven resultado desde `execute()`.
 - Models viven en `app/Domains/{Domain}/Models/`. Nunca en `app/Models/`.
-- El client autenticado se obtiene del request: `$request->attributes->get('client')`.
+- La organización autenticada se obtiene del request: `$request->attributes->get('organization')`.
+- La api key usada se obtiene del request: `$request->attributes->get('api_key')`.
 - IDs son UUID. Usar el trait `\Innertia\Platform\Traits\HasUuid`.
+- Rutas protegidas: `Route::middleware('verify.api.key')->group(...)`
 
 ### Ejemplo de UseCase
 
@@ -60,29 +62,29 @@ app/
 namespace App\Domains\Orders\UseCases;
 
 use App\Domains\Orders\Models\Order;
-use Innertia\Api\Models\Client;
+use Innertia\Api\Models\Organization;
 use Innertia\Platform\Contracts\UseCase;
 
 class CreateOrder extends UseCase
 {
     public function __construct(
-        public readonly Client $client,
-        public readonly string $description,
-        public readonly float  $total,
+        public readonly Organization $organization,
+        public readonly string       $description,
+        public readonly float        $total,
     ) {}
 
     public function execute(): Order
     {
         return Order::create([
-            'client_id'   => $this->client->id,
-            'description' => $this->description,
-            'total'       => $this->total,
+            'organization_id' => $this->organization->id,
+            'description'     => $this->description,
+            'total'           => $this->total,
         ]);
     }
 }
 
 // Uso sincrónico:
-$order = (new CreateOrder(client: $client, description: '...', total: 99.9))->execute();
+$order = (new CreateOrder(organization: $org, description: '...', total: 99.9))->execute();
 
 // Uso asincrónico (cola):
 (new CreateOrder(...))->onQueue();
@@ -104,16 +106,16 @@ class OrdersController
 {
     public function store(Request $request): JsonResponse
     {
-        $data   = $request->validate([
+        $data         = $request->validate([
             'description' => 'required|string',
             'total'       => 'required|numeric|min:0',
         ]);
-        $client = $request->attributes->get('client');
+        $organization = $request->attributes->get('organization');
 
         $order = (new CreateOrder(
-            client:      $client,
-            description: $data['description'],
-            total:       $data['total'],
+            organization: $organization,
+            description:  $data['description'],
+            total:        $data['total'],
         ))->execute();
 
         return response()->json($order, 201);

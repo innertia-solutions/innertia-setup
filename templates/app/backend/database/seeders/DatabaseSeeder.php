@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin->assignRole($role);
-        $admin->grantApp('backoffice');
+        $admin->grantContext('backoffice');
 
         // 4. Demo data (non-production only)
         if (app()->environment() !== 'production') {

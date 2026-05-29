@@ -67,9 +67,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-                "innertia-solutions/laravel-innertia"
-            ]
+            "dont-discover": []
         }
     },
     "config": {

@@ -1,33 +1,33 @@
-import tailwindcss from '@tailwindcss/vite'
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: [
-    '@innertia-solutions/nuxt-theme-spark',        // UI: Spark components, layouts, Preline, Tailwind
-    '@innertia-solutions/nuxt-app',     // Auth, context, permissions, useApi
+    '@innertia-solutions/innertia-nuxt', // Capa unificada: core + auth + design system
   ],
-  modules: [
-    '@pinia/nuxt',
-    'pinia-plugin-persistedstate/nuxt',
+  css: [
+    '@innertia-solutions/innertia-nuxt/theme.css',
+    '~/assets/css/theme.css',
   ],
+  appConfig: {
+    innertia: {
+      mode: 'app',
+      branding: { name: '{{PROJECT_NAME}}', version: '1.0.0' },
+      theme: 'default',
+      colors: { primary: 'violet', secondary: 'slate' },
+    },
+  },
   compatibilityDate: '2025-07-15',
   ssr: true,
   devServer: {
-    host: '0.0.0.0'
-  },
-  vite: {
-    plugins: [tailwindcss()],
+    host: '0.0.0.0',
   },
   runtimeConfig: {
+    apiInternalUrl: process.env.NUXT_API_BASE_URL || 'http://api:80',
     public: {
       appName: '{{PROJECT_NAME}}',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
       appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'local',
-      loginPath: process.env.NUXT_PUBLIC_LOGIN_PATH || '/backoffice/login',
-      homePath: process.env.NUXT_PUBLIC_HOME_PATH || '/',
-      oauthProviders: [],
       timeZone: process.env.NUXT_PUBLIC_TIMEZONE || 'America/Santiago',
-    }
+    },
   },
   nitro: {
     routeRules: {
@@ -41,7 +41,7 @@ export default defineNuxtConfig({
     head: {
       title: '{{PROJECT_NAME}}',
       link: [
-        { rel: 'icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
       ],
     },
   },

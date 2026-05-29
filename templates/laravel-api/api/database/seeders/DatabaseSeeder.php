@@ -8,6 +8,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Seed clients and API keys here if needed
+        // Seed organizations and API keys here if needed.
+        // Example (via Olimpo API or artisan command):
+        //   php artisan innertia:organization:create default "Default Org"
     }
 }

@@ -1,22 +1,18 @@
 {
   "name": "{{PROJECT_NAME}}-frontend",
-  "type": "module",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "build": "nuxt build",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "generate": "nuxt generate"
   },
   "dependencies": {
-    "nuxt": "^4.4.4",
-    "vue": "^3.5.33",
-    "vue-router": "^5.0.6",
-    "@innertia-solutions/nuxt-app": "^0.1.11",
-    "@innertia-solutions/nuxt-saas": "^0.1.10",
-    "@innertia-solutions/nuxt-theme-spark": "^0.1.19",
-    "@pinia/nuxt": "^0.11.0",
-    "pinia-plugin-persistedstate": "^4.0.0"
-  }
+    "@innertia-solutions/innertia-nuxt": "^0.1.9",
+    "@tabler/icons-vue": "^3.44.0",
+    "nuxt": "^4.4.6",
+    "vue": "^3.5.34",
+    "vue-router": "^5.0.7"
+  },
+  "packageManager": "pnpm@9.15.0"
 }

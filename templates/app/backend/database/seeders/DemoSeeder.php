@@ -35,7 +35,7 @@ class DemoSeeder extends Seeder
                 ]
             );
             $user->assignRole($role);
-            $user->grantApp('backoffice');
+            $user->grantContext('backoffice');
         }
     }
 }
