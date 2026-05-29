@@ -5,10 +5,10 @@
 // Publicado por innertia-kit via: php artisan vendor:publish --tag=innertia-routes
 
 use Illuminate\Support\Facades\Route;
-use App\Apps\Backoffice\Auth\AuthController;
-use App\Apps\Backoffice\Users\UsersController;
-use App\Apps\Backoffice\Roles\RolesController;
-use App\Apps\Backoffice\Permissions\PermissionsController;
+use Innertia\Auth\Http\Controllers\AuthController;
+use Innertia\Backoffice\Http\Controllers\UsersController;
+use Innertia\Backoffice\Http\Controllers\RolesController;
+use Innertia\Backoffice\Http\Controllers\PermissionsController;
 use Innertia\Auth\Http\Controllers\SocialSettingsController;
 use Innertia\Auth\Http\Controllers\TwoFactorController;
 use Innertia\Auth\Middleware\Authenticate;

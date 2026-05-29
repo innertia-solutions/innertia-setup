@@ -5,7 +5,7 @@
 // Publicado por innertia-kit via: php artisan vendor:publish --tag=innertia-routes
 
 use Illuminate\Support\Facades\Route;
-use App\Apps\Backoffice\Auth\AuthController;
+use Innertia\Auth\Http\Controllers\AuthController;
 use App\Apps\Backoffice\Auth\PasswordController;
 use Innertia\Auth\Http\Controllers\EmailVerificationController;
 use Innertia\Auth\Http\Controllers\OtpController;
