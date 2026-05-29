@@ -1,20 +1,9 @@
 <?php
 
-// api.public.php — rutas sin autenticación (SaaS mode).
-// ResolveTenantFromHeader lee X-Tenant: {slug} y resuelve el tenant.
+// Rutas base/públicas (SaaS). Los registrars auto-aplican su middleware.
+// Olimpo (admin de plataforma) lo registra el OlimpoServiceProvider.
 
-use Illuminate\Support\Facades\Route;
-use Innertia\Saas\Http\Controllers\TenantController;
-use Innertia\Saas\Middleware\ResolveTenantFromHeader;
+\Innertia\Saas\Auth\Routes::register();   // /auth/* (login, otp, 2fa, email, password, oauth, me, refresh, logout)
+\Innertia\Saas\Routes::register();        // /status
 
-Route::middleware(ResolveTenantFromHeader::class)->group(function () {
-
-    // Estado del tenant (boot SSR del frontend): tenant + features + branding.
-    Route::get('status', [TenantController::class, 'status']);
-
-    // Autenticación del contexto backoffice (login, otp, 2fa, email, password, oauth).
-    \Innertia\Auth\Routes::publicRoutes('backoffice/auth');
-
-    // Rutas de auth propias del producto van aquí (mismo grupo).
-    // Multi-contexto: \Innertia\Auth\Routes::publicRoutes('technician/auth');
-});
+// Rutas públicas propias del producto van aquí.
