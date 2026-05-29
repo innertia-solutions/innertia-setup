@@ -22,26 +22,18 @@ return [
     |
     | key_prefix  — Prefijo de las API keys generadas (e.g. 'cog_', 'bil_').
     |               Define uno único por producto para distinguir keys entre servicios.
-    | key_header  — Header HTTP usado para pasar la API key.
+    | key_header  — Header HTTP usado para pasar la API key. Lo lee el middleware
+    |               'verify.api.key', que inyecta organization + api_key al request.
     |
-    | available_permissions — Permisos que pueden asignarse a las API keys.
-    |   Apunta a tu enum \App\Enums\ApiPermissions::class (recomendado)
-    |   o define un array plano: ['perm.name' => 'Descripción'].
-    |
-    |   El enum es type-safe, se puede autocompletar en el IDE y lleva la
-    |   descripción inline. Olimpo lo lee via GET /olimpo/api-keys/permissions.
-    |
-    | Proteger rutas:
-    |   Route::middleware('apikey')->group(...)
-    |   Route::middleware('apikey:permission.name')->get(...)
+    | El modo api no maneja permisos en las keys: son identidad de la organización.
+    | Proteger rutas de negocio:
+    |   Route::middleware(\Innertia\Api\Routes::privateMiddleware())->group(...)
     |
     */
 
     'api' => [
         'key_prefix'  => env('API_KEY_PREFIX', 'api_'),
         'key_header'  => 'X-Api-Key',
-
-        'available_permissions' => \App\Enums\ApiPermissions::class,
     ],
 
     /*
