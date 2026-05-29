@@ -44,6 +44,7 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
+            "@php artisan jwt:secret --force",
             "@php artisan migrate --force"
         ],
         "test": [
@@ -62,6 +63,7 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
+            "@php artisan jwt:secret --force --ansi",
             "@php artisan migrate --graceful --ansi"
         ]
     },
