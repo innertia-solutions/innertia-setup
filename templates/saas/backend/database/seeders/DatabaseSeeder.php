@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Innertia\Auth\RBAC\Models\Role;
 use Innertia\Exceptions\ConflictException;
 use Innertia\Facades\Innertia;
 use Innertia\Facades\Permissions;
@@ -14,30 +13,30 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $tenantKey    = env('SEED_TENANT_KEY',     'dev');
-        $tenantName   = env('SEED_TENANT_NAME',    'Dev Tenant');
-        $adminEmail   = env('SEED_ADMIN_EMAIL',    "admin@{$tenantKey}.com");
-        $adminPass    = env('SEED_ADMIN_PASSWORD', 'Admin1234!');
-        $demoEmail    = env('SEED_DEMO_EMAIL',     null);
-        $demoPassword = env('SEED_DEMO_PASSWORD',  null);
+        $tenantKey  = env('SEED_TENANT_KEY',     'dev');
+        $tenantName = env('SEED_TENANT_NAME',    'Dev Tenant');
+        $adminEmail = env('SEED_ADMIN_EMAIL',    "admin@{$tenantKey}.com");
+        $adminPass  = env('SEED_ADMIN_PASSWORD', 'Admin1234!');
 
-        // 1. Sync permissions
+        // 1. Sync permissions declared in config/innertia.php
         Permissions::sync();
 
-        // 2. Create tenant (skip if already exists)
+        // 2. Create the dev tenant (active)
         try {
             (new CreateTenant(
-                key:          $tenantKey,
-                name:         $tenantName,
-                status:       'active',
-                demoEmail:    $demoEmail,
-                demoPassword: $demoPassword,
+                key:    $tenantKey,
+                name:   $tenantName,
+                status: 'active',
             ))->execute();
         } catch (ConflictException) {
             // already exists — continue
         }
 
-        // 3. Activate tenant and create admin user
+        // 3. Create admin user.
+        //    CreateTenantAdmin also:
+        //      - grants access to every context in config('innertia.contexts')
+        //      - assigns the super-admin role (bypasses all gates via Gate::before)
+        //      - enables demo mode with these same credentials (shown on login page)
         Innertia::activate($tenantKey);
 
         try {
@@ -46,15 +45,9 @@ class DatabaseSeeder extends Seeder
             // already exists — continue
         }
 
-        // 4. Admin role with all permissions
-        $tenantId  = (string) Innertia::tenant()->getKey();
-        $adminRole = Role::findByName('Admin', $tenantId)
-            ?? Role::createUnique('Admin', 'Acceso completo al sistema.', $tenantId);
-
-        $adminRole->syncPermissions(Permissions::keys());
-
         Innertia::deactivate();
 
-        $this->command->info("Tenant: {$tenantKey} | Admin: {$adminEmail} | Password: {$adminPass}");
+        $this->command->info("Tenant: {$tenantKey} | Login: {$adminEmail} | Password: {$adminPass}");
+        $this->command->warn('Demo mode activo — estas credenciales aparecen en la pantalla de login.');
     }
 }
